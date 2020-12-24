@@ -1,0 +1,11 @@
+[name]
+[name.english]
+label = 'Name'
+
+[age]
+[age.english]
+label = 'Age'
+
+[location]
+[location.english]
+label = 'Location'

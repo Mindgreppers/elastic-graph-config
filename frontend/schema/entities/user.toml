@@ -1,0 +1,46 @@
+[emailId.english]
+label = 'Email Id'
+
+[contactNumber]
+[contactNumber.english]
+label = 'Contact Number'
+
+[firstName]
+[firstName.english]
+label = 'First Name'
+
+[lastName]
+[lastName.english]
+label = 'Last Name'
+
+[designation]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[designation.english]
+label = 'Designation'
+
+[state]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[state.english]
+label = 'State'
+
+[college]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[college.english]
+label = 'College'
+
+[workshops]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[workshops.english]
+label = 'Workshops'

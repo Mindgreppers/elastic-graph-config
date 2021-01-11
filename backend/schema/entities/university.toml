@@ -1,0 +1,16 @@
+[name]
+sort = true
+type = 'String'
+autoSuggestion = true
+
+[isDeemed]
+type = 'String'
+multiLingual = false
+
+[address]
+type = 'String'
+multiLingual = true
+
+[contactNumber]
+type = 'String'
+multiLingual = false

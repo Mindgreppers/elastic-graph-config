@@ -1,0 +1,8 @@
+state = ['country.name']
+city = ['state.name', 'state.country.name']
+zone = ['states.name', 'states.country.name']
+university = ['state.name', 'state.country.name']
+college = ['state.name', 'state.country.name', 'university.name']
+user = ['state.name', 'college.name', 'designation.name', 'workshops.name']
+attendance = ['workshop.name', 'workshop.workshopCode']
+poll = ['workshop.name']

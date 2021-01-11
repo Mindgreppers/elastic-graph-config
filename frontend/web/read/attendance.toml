@@ -1,0 +1,6 @@
+primaryField = 'timeInSession'
+secondaryFields = ['joinTime', 'leaveTime', 'dayNumber']
+[user]
+fields = ['emailId', 'firstName', 'lastName']
+[workshop]
+fields = ['name', 'workshopCode']

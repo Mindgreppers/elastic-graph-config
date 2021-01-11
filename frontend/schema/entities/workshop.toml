@@ -1,0 +1,16 @@
+[name.english]
+label = 'Name'
+
+[workshopCode]
+[workshopCode.english]
+label = 'Workshop Code'
+
+[startDate]
+isRequired = true
+[startDate.english]
+label = 'Start Date'
+
+[endDate]
+isRequired = true
+[endDate.english]
+label = 'End Date'

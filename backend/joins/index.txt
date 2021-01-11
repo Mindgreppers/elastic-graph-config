@@ -1,0 +1,30 @@
+[country]
+  states{name}
+[state]
+  country{name}
+  cities{name}
+  zone{name}
+[city]
+  state{name}
+  state.country{name}
+[zone]
+  states{name}
+  states.country{name}
+[university]
+  states{name}
+[college]
+  state{name}
+  university{name}
+[user]
+  state{name}
+  college{name}
+  designation{name}
+  workshops{name}
+[attendance]
+  user{emailId}
+  workshop{name}
+[user-question-answer]
+  user{emailId}
+  question{text}
+  question.poll{type}
+  question.poll.workshop{name}

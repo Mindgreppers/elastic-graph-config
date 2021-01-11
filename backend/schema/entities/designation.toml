@@ -1,0 +1,4 @@
+[name]
+sort = true
+type = 'String'
+autoSuggestion = true

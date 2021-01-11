@@ -1,0 +1,21 @@
+[type]
+isRequired = true
+enum = ['Poll', 'Morning Quiz', 'Evening Quiz', 'Test']
+[type.english]
+label = 'Question Type'
+
+[question]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'text'
+[text.english]
+label = 'Text'
+
+[workshop]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[workshop.english]
+label = 'Workshop'

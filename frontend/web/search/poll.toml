@@ -1,0 +1,5 @@
+primaryField = 'type'
+[question]
+fields = ['text']
+[workshop]
+fields = ['name']

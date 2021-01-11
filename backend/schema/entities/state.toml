@@ -1,0 +1,8 @@
+[name]
+sort = true
+type = 'String'
+autoSuggestion = true
+
+[capital]
+type = 'String'
+multiLingual = true

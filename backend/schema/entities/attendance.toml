@@ -1,0 +1,12 @@
+[joinTime]
+type = 'date'
+sort = true
+
+[leaveTime]
+type = 'date'
+
+[timeInSession]
+type = 'Number'
+
+[dayNumber]
+type = 'Number'

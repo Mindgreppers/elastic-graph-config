@@ -1,0 +1,6 @@
+primaryField = 'name'
+secondaryFields = ['address', 'contactNumber', 'isAICTEApproved']
+[state]
+fields = ['name']
+[university]
+fields = ['name']

@@ -1,0 +1,47 @@
+country <> states
+	[state] <> country
+
+state <> cities
+	[city] <> state
+
+zone <> states
+	[state] <> zone
+
+university <> state
+	state <> university
+
+college <> state
+	state <> college
+
+college <> university
+	university <> college
+
+user <> state
+	state <> user
+
+user <> college
+	college <> user
+
+user <> designation
+	designation <> user
+
+user <> workshops
+	[workshop] <> user
+
+user <> attendances
+	[attendance] <> user
+
+workshop <> attendances
+	[attendance] <> workshop
+
+user-question-answer <> question
+	question <> user-question-answer
+
+user-question-answer <> user
+	user <> user-question-answer
+
+poll <> questions
+	[question] <> poll
+
+workshop <> polls
+	[poll] <> workshop

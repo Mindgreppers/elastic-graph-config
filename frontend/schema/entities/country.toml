@@ -1,0 +1,14 @@
+[name.english]
+label = 'Name'
+
+[capital]
+[capital.english]
+label = 'Capital'
+
+[states]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'name'
+[states.english]
+label = 'States'

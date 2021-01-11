@@ -1,0 +1,28 @@
+[name.english]
+label = 'Name'
+
+[address]
+isRequired = true
+[address.english]
+label = 'Address'
+
+[contactNumber]
+isRequired = true
+[contactNumber.english]
+label = 'Contact Number'
+
+[isAICTEApproved]
+isRequired = true
+[isAICTEApproved.english]
+label = 'Is AICTE Approved'
+
+[state]
+dropDown = 'name'
+dropDownSecondaryField = 'country.name'
+[state.english]
+label = 'State'
+
+[university]
+dropDown = 'name'
+[university.english]
+label = 'University'

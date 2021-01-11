@@ -1,0 +1,21 @@
+[user]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'emailId'
+[user.english]
+label = 'Email Id'
+
+[question]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'text'
+[text.english]
+label = 'Text'
+
+[answer.english]
+label = 'Answer'
+
+[isCorrect.english]
+label = 'Is Correct'

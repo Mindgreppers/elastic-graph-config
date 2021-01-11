@@ -1,0 +1,16 @@
+[name]
+sort = true
+type = 'String'
+autoSuggestion = true
+
+[address]
+type = 'String'
+multiLingual = true
+
+[contactNumber]
+type = 'String'
+multiLingual = false
+
+[isAICTEApproved]
+type = 'String'
+multiLingual = false

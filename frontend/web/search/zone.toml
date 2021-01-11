@@ -1,0 +1,4 @@
+primaryField = 'name'
+[states]
+fields = ['name']
+relationFields = ['country.name']

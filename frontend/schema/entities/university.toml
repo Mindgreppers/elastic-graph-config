@@ -1,0 +1,23 @@
+[name.english]
+label = 'Name'
+
+[isDeemed]
+isRequired = true
+[isDeemed.english]
+label = 'Is Deemed University'
+
+[address]
+isRequired = true
+[address.english]
+label = 'Address'
+
+[contactNumber]
+isRequired = true
+[contactNumber.english]
+label = 'Contact Number'
+
+[state]
+dropDown = 'name'
+dropDownSecondaryField = 'country.name'
+[state.english]
+label = 'State'

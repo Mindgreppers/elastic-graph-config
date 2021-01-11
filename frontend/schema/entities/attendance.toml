@@ -1,0 +1,22 @@
+[joinTime.english]
+label = 'Join Time'
+
+[leaveTime]
+[leaveTime.english]
+label = 'Leave Time'
+
+[timeInSession]
+[timeInSession.english]
+label = 'Time In Session'
+
+[dayNumber]
+[dayNumber.english]
+label = 'Day Number'
+
+[user]
+autoSuggestion = true
+isRequired = true
+canAddFromView = true
+dropDown = 'emailId'
+[user.english]
+label = 'Email Id'

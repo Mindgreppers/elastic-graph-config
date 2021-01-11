@@ -1,0 +1,18 @@
+[name.english]
+label = 'Name'
+
+[country]
+dropDown = 'name'
+[country.english]
+label = 'Country'
+
+[cities]
+editInEditForm = false
+dropDown = 'name'
+[cities.english]
+label = 'Cities'
+
+[zone]
+dropDown = 'name'
+[zone.english]
+label = 'Zone'

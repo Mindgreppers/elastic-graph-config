@@ -1,0 +1,6 @@
+primaryField = 'answer'
+secondaryFields = ['answer', 'isCorrect']
+[user]
+fields = ['emailId', 'firstName', 'lastName']
+[question]
+fields = ['text']

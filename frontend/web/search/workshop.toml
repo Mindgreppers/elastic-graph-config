@@ -1,0 +1,2 @@
+primaryField = 'name'
+secondaryFields = ['workshopCode', 'startDate', 'endDate']

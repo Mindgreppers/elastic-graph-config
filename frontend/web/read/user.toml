@@ -1,0 +1,11 @@
+primaryField = 'emailId'
+secondaryFields = ['contactNumber', 'firstName', 'lastName']
+[state]
+fields = ['name']
+relationFields = ['country.name']
+[designation]
+fields = ['name']
+[college]
+fields = ['name']
+[workshops]
+fields = ['name']

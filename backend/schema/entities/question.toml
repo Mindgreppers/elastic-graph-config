@@ -1,0 +1,24 @@
+[text]
+sort = true
+type = 'String'
+autoSuggestion = true
+
+[option1]
+type = 'String'
+multiLingual = false
+
+[option2]
+type = 'String'
+multiLingual = false
+
+[option3]
+type = 'String'
+multiLingual = false
+
+[option4]
+type = 'String'
+multiLingual = false
+
+[correctOption]
+type = 'String'
+multiLingual = false

@@ -1,0 +1,3 @@
+primaryField = 'name'
+[country]
+fields = ['name']

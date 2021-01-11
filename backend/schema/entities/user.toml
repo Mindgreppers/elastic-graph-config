@@ -1,0 +1,15 @@
+[emailId]
+type = 'String'
+sort = true
+autoSuggestion = true
+
+[contactNumber]
+type = 'String'
+
+[firstName]
+type = 'String'
+sort = true
+
+[lastName]
+type = 'String'
+sort = true

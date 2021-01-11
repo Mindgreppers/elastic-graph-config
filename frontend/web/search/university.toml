@@ -1,0 +1,5 @@
+primaryField = 'name'
+secondaryFields = ['isDeemed', 'address', 'contactNumber']
+[state]
+fields = ['name']
+relationFields = ['country.name']

@@ -1,0 +1,8 @@
+[name.english]
+label = 'Name'
+
+[state]
+dropDown = 'name'
+dropDownSecondaryField = 'country.name'
+[state.english]
+label = 'State'

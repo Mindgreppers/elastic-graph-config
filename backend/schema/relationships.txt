@@ -16,8 +16,8 @@ college <> state
 college <> university
 	university <> college
 
-user <> state
-	state <> user
+users <> state
+	state <> [user]
 
 user <> college
 	college <> user

@@ -1,0 +1,15 @@
+[title]
+sort = true
+type = 'String'
+autoSuggestion = true
+
+[description]
+type = 'String'
+multiLingual = true
+
+[genre]
+type = ['String']
+
+[tmdbRating]
+type = 'Number'
+sort = true

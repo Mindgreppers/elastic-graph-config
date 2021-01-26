@@ -1,0 +1,10 @@
+[firstName]
+type = 'String'
+sort = true
+
+[lastName]
+type = 'String'
+sort = true
+
+[tmbdUrl]
+type = 'String'

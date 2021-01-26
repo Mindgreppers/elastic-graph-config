@@ -1,54 +1,6 @@
-users <> workshops
-	[workshop] <> [user]
-	do not store foreign keys in workshop
-
-country <> states
-	[state] <> country
-
-state <> cities
-	[city] <> state
-
-zone <> states
-	[state] <> zone
-
-university <> state
-	state <> university
-
-college <> state
-	state <> college
-
-college <> university
-	university <> college
-
-users <> state
-	state <> [user]
-	do not store foreign keys in state
-
-user <> college
-	college <> user
-	do not store foreign keys in college
-
-user <> designation
-	designation <> user
-	do not store foreign keys in designation
-
-user <> attendances
-	[attendance] <> user
-
-workshop <> attendances
-	[attendance] <> workshop
-	do not store foreign keys in workshop
-
-user-question-answer <> question
-	question <> user-question-answer
-	do not store foreign keys in question
-
-user-question-answer <> user
-	user <> user-question-answer
-	do not store foreign keys in user
-
-poll <> questions
-	[question] <> poll
-
-workshop <> polls
-	[poll] <> workshop
+films <> actors
+	[person] <> [film]
+films <> director
+	person <> [film]
+films <> producer
+	person <> [film]

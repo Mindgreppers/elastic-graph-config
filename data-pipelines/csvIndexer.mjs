@@ -12,16 +12,14 @@ export const indexCsv = async (egClient, filePath, indexName, additionalKeyValue
     return new Promise((resolve, reject) => {
         indexData(resolve, egClient, filePath, indexName, additionalKeyValuePairs, numericalRows);
     });
-    
 };
 
 const ensureIndexExists = async (egClient, indexName) => {
     console.log()
-    const { body } = await egClient.exists({
-        index: indexName,
-        id: 1
+    const { body } = await egClient.indices.exists({
+        index: indexName
     });
-
+ 
     //ES returns true or false in the body
     if (body) {
         return;

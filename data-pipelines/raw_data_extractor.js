@@ -11,15 +11,20 @@ const extractRawDataInES = async (egClient, workshopDataFolderPath) => {
     //Code is stored in the name after workshop_{code}
     workshopCode = workshopCode.split('_')[1]
 
-    // const registrationDataFilePath = [process.cwd(), workshopDataFolderPath, 'from_AICTE', 'semi-processed', 'registration.csv'].join('/');
-    // await extractRegistrations(egClient, workshopCode, registrationDataFilePath);
+    const registrationDataFilePath = [process.cwd(), workshopDataFolderPath, 'from_AICTE', 'semi-processed', 'registration.csv'].join('/');
+    console.time('Extracting registration data from AICTE');
+    await extractRegistrations(egClient, workshopCode, registrationDataFilePath);
+    console.timeEnd('Extracting registration data from AICTE');
 
-    // const surveyDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Google_Forms', 'semi-processed'].join('/');
-    // await extractSurveysEtc(egClient, workshopCode, surveyDataFolderPath);
+    console.time('Extracting survey data from Google Forms')
+    const surveyDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Google_Forms', 'semi-processed'].join('/');
+    await extractSurveysEtc(egClient, workshopCode, surveyDataFolderPath);
+    console.timeEnd('Extracting survey data from Google Forms');
 
+    console.time('Extracting attendance and poll data');
     const attendateAndPollDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Zoom', 'semi-processed'].join('/'); 
     const x = await extractAttendanceAndPollsData (egClient, workshopCode, attendateAndPollDataFolderPath);
-    console.log('fone', x)
+    console.timeEnd('Extracting attendance and poll data')
 }
 
 const extractRegistrations = async (egClient, workshopCode, registrationCsvPath) => {
@@ -31,31 +36,36 @@ const extractRegistrations = async (egClient, workshopCode, registrationCsvPath)
 
 const extractSurveysEtc = async (egClient, workshopCode, surveysFolderPath) => {
     const fileNames = fs.readdirSync(surveysFolderPath);
-    const indexingPromise = fileNames.reduce((promiseSoFar, fileName) => {
+    const indexingPromise = fileNames.reduce(async (promiseSoFar, fileName) => {
         const fullFilePath = `${surveysFolderPath}/${fileName}`;
         //Extract indexName from {{indexName}}.csv
         const indexName = fileName.split('.')[0];
         return promiseSoFar
-        .then(() => {
+        .then(async () => {
+            await sleep(2000);
             return indexCsv(egClient, fullFilePath, indexName, {workshopCode}, config.sources.googleForms);
         })
-        .catch(console.log)
     }, Promise.resolve());
     return indexingPromise;
 };  
 
 const extractAttendanceAndPollsData = async (egClient, workshopCode, attendateAndPollDataFolderPath) => {
     const fileNames = fs.readdirSync(attendateAndPollDataFolderPath);
-    const indexingPromise = fileNames.reduce((promiseSoFar, fileName) => {
+    const indexingPromise = fileNames.reduce(async (promiseSoFar, fileName) => {
         const fullFilePath = `${attendateAndPollDataFolderPath}/${fileName}`;
         //Extract indexName from {{indexName}}.csv
         const indexName = fileName.split('.')[0];
-        return promiseSoFar.then(() => {
+        return promiseSoFar.then(async () => {
+            await sleep(2000);
             return indexCsv(egClient, fullFilePath, indexName, {workshopCode}, config.sources.zoom);
         });
     }, Promise.resolve());
     return indexingPromise;
 };
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 var egClient = new ElasticGraph(process.argv[2]);
 const dataDirectory = process.argv[3];

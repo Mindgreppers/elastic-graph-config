@@ -9,9 +9,14 @@ import CsvReadableStream from 'csv-reader';
  */
 export const indexCsv = async (egClient, filePath, indexName, additionalKeyValuePairs = {}, surveyOptions) => {
     await ensureIndexExists(egClient, indexName);
+    console.log('csvIndexer: starting to index', indexName);
     return new Promise((resolve, reject) => {
+        //indexData called resolve() when the whole file is processed
         indexData(resolve, egClient, filePath, indexName, additionalKeyValuePairs, surveyOptions);
-    });
+    })
+    .then(() => {
+        console.log('csvIndexer: indexed', indexName);
+    })
 };
 
 const ensureIndexExists = async (egClient, indexName) => {

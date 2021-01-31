@@ -2,10 +2,12 @@
   "name": "buildersdeck_eg_schema",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "repository": "https://github.com/mastersilv3r/buildersdeck_eg_schema.git",
   "author": "mountainfirefly <pankajdcoder@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "csv-reader": "^1.0.7",
     "lodash": "4.17.15",
     "toml": "3.0.0"
   }

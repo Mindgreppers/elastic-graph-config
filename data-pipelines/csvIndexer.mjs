@@ -7,15 +7,14 @@ import CsvReadableStream from 'csv-reader';
  * @param {*} filePath path of the csv file
  * @param {*} additionalKeyValuePairs to be inserted in every row
  */
-export const indexCsv = async (egClient, filePath, indexName, additionalKeyValuePairs = {}, numericalRows) => {
+export const indexCsv = async (egClient, filePath, indexName, additionalKeyValuePairs = {}, surveyOptions) => {
     await ensureIndexExists(egClient, indexName);
     return new Promise((resolve, reject) => {
-        indexData(resolve, egClient, filePath, indexName, additionalKeyValuePairs, numericalRows);
+        indexData(resolve, egClient, filePath, indexName, additionalKeyValuePairs, surveyOptions);
     });
 };
 
 const ensureIndexExists = async (egClient, indexName) => {
-    console.log()
     const { body } = await egClient.indices.exists({
         index: indexName
     });
@@ -36,7 +35,7 @@ const ensureIndexExists = async (egClient, indexName) => {
       })
 }
 
-const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs, numericalColumns ) => {
+const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs, surveyOptions ) => {
     let inputStream = Fs.createReadStream(filePath, 'utf8');
 
     let handled = 0
@@ -48,7 +47,7 @@ const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs
     inputStream
         .pipe(new CsvReadableStream({ parseNumbers: true, parseBooleans: true, trim: true, skipHeader: true, delimiter: ";", asObject: true }))
         .on('data', async function(row) {
-            sanitizeRow(row, {numericalColumns})
+            sanitizeRow(row, surveyOptions)
             if (additionalKeyValuePairs) {
                 row = {...row, ...additionalKeyValuePairs};
             }
@@ -88,8 +87,14 @@ function isEmptyRow(row) {
     return false
 }
 
-function sanitizeRow(row, {numericalColumns}) {
+function sanitizeRow(row, {numericalColumns, includedColumns}) {
     Object.keys(row).forEach((columnName) => {
+        
+        if (includedColumns && !includedColumns.includes(columnName)) {
+            delete row[columnName];
+            return;
+        }
+
         if (columnName === '' || row[columnName] === '') {
             delete row[columnName];
             return;

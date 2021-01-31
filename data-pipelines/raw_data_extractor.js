@@ -2,7 +2,7 @@ import ElasticGraph from 'elasticgraph';
 import {indexCsv} from './csvIndexer.mjs';
 import fs from 'fs';
 
-import config from './config';
+import config from './data_config.mjs';
 
 const extractRawDataInES = async (egClient, workshopDataFolderPath) => {
     const dataFolderPathArray = workshopDataFolderPath.split('/');
@@ -18,26 +18,43 @@ const extractRawDataInES = async (egClient, workshopDataFolderPath) => {
     // await extractSurveysEtc(egClient, workshopCode, surveyDataFolderPath);
 
     const attendateAndPollDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Zoom', 'semi-processed'].join('/'); 
-    await extractAttendanceAndPollsData (egClient, workshopCode, attendateAndPollDataFolderPath);
+    const x = await extractAttendanceAndPollsData (egClient, workshopCode, attendateAndPollDataFolderPath);
+    console.log('fone', x)
 }
 
 const extractRegistrations = async (egClient, workshopCode, registrationCsvPath) => {
     await indexCsv(egClient, registrationCsvPath, 'raw_registrations', {workshopCode}, config.sources.aicte.registrations);
+
+
+
 };
 
 const extractSurveysEtc = async (egClient, workshopCode, surveysFolderPath) => {
     const fileNames = fs.readdirSync(surveysFolderPath);
-    const indexingPromises = fileNames.map((fileName) => {
+    const indexingPromise = fileNames.reduce((promiseSoFar, fileName) => {
         const fullFilePath = `${surveysFolderPath}/${fileName}`;
         //Extract indexName from {{indexName}}.csv
         const indexName = fileName.split('.')[0];
-        return indexCsv(egClient, fullFilePath, indexName, {workshopCode}, config.sources.googleForms);
-    });
-    return Promise.all(indexingPromises);
+        return promiseSoFar
+        .then(() => {
+            return indexCsv(egClient, fullFilePath, indexName, {workshopCode}, config.sources.googleForms);
+        })
+        .catch(console.log)
+    }, Promise.resolve());
+    return indexingPromise;
 };  
 
 const extractAttendanceAndPollsData = async (egClient, workshopCode, attendateAndPollDataFolderPath) => {
-
+    const fileNames = fs.readdirSync(attendateAndPollDataFolderPath);
+    const indexingPromise = fileNames.reduce((promiseSoFar, fileName) => {
+        const fullFilePath = `${attendateAndPollDataFolderPath}/${fileName}`;
+        //Extract indexName from {{indexName}}.csv
+        const indexName = fileName.split('.')[0];
+        return promiseSoFar.then(() => {
+            return indexCsv(egClient, fullFilePath, indexName, {workshopCode}, config.sources.zoom);
+        });
+    }, Promise.resolve());
+    return indexingPromise;
 };
 
 var egClient = new ElasticGraph(process.argv[2]);

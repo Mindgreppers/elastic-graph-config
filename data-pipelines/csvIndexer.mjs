@@ -113,7 +113,7 @@ function sanitizeRow(row, {numericalColumns, includedColumns}) {
                 //console.log('d')
             }
             //Parse numerical values
-            if (numericalColumns.includes(columnName)) {
+            if (numericalColumns && numericalColumns.includes(columnName)) {
                 if (+row[columnName]) {
                     row[columnName] = +row[columnName];
                 } else {

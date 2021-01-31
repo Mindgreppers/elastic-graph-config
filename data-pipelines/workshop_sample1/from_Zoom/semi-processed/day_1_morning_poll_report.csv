@@ -1,4 +1,4 @@
-PollNumber;User Name;User Email;Submitted Date/Time;;;
+pollNumber;userName;userEmail;submittedDateTime;column1;_1;_2
 1;Dr. M. Vijay Anand;vijayanand@kongu.ac.in;Sep 21, 2020 12:07:53;Are you aware how many pairs of clothes you have?;Yes;
 2;Dr. Rajatha Shety;rajatha@gmail.com;Sep 21, 2020 12:07:54;Are you aware how many pairs of clothes you have?;No;
 3;G2-Mrs. S.Vaishnodevi AP, Vinayaka Missions Kirupananda Variyar Engineering College,;vaishnosathees@gmail.com;Sep 21, 2020 12:08:02;Are you aware how many pairs of clothes you have?;Yes;

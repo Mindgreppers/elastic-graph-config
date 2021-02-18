@@ -20,8 +20,8 @@ const savePollResponses = (workshopCode, day, session) => {
             'if *user is empty, stop here.',
             //'display *raw_poll',
             setPollTypeInContext, //sets pollType variable in ctx depending on quizCode entered by UHS
-            `search first poll where {workshop._id: ${workshopCode}, day: ${day}, session: ${session}, type: *pollType, } as poll. Create if not exists.`,
-            createQuestionsIfNew,          
+            `search first poll where {workshop._id: ${workshopCode}, day: ${day}, session: ${session}, pollType: *pollType, } as poll. Create if not exists.`,
+            createQuestionsIfNewAndSaveUserResponse,          
         ]
     ]
 };
@@ -46,7 +46,7 @@ const setPollTypeInContext = (ctx) => {
     return ctx.setImmutable('pollType', pollType);
 }
 
-const createQuestionsIfNew = async (ctx) => {
+const createQuestionsIfNewAndSaveUserResponse = async (ctx) => {
     let rawPoll = ctx.get('raw_poll');
     rawPoll = rawPoll._source || rawPoll.fields;
     
@@ -78,7 +78,7 @@ const createQuestionsIfNew = async (ctx) => {
                         return ctx.setImmutable('isCorrectAnswer', false);
                     }
                 },
-                ,
+                
                 `uqa is {
                     _type: user-question-answer,
                     user._id: *user._id,
@@ -89,13 +89,10 @@ const createQuestionsIfNew = async (ctx) => {
             ];
             //Not filling choices of answers for now.
         });
-    
-    await Promise.all(scriptsToRun.map((script) => ctx.es.dsl.execute(script, ctx)));
+    //Execute all the generated script one by one.
+    for await (let script of scriptsToRun) {
+        await ctx.es.dsl.execute(script, ctx)
+    };
 
     return ctx;
 };
-
-const isCorrect = async (ctx) => {
-    const rawPoll = ctx.get('raw_poll');
-    return true;
-}

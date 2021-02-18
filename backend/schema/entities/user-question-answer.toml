@@ -1,6 +1,3 @@
-[answer]
-type = 'String'
-
 [isCorrect]
 sort = true
 type = 'String'

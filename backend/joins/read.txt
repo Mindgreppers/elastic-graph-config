@@ -26,5 +26,5 @@
 [user-question-answer]
   user{emailId}
   question{text}
-  question.poll{type}
-  question.poll.workshop{name}
+  question.polls{type}
+  question.polls.workshop{name}

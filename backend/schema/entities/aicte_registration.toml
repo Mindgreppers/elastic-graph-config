@@ -1,0 +1,88 @@
+[candidateName]
+type = 'string'
+sort = true
+autoSuggestion = true
+
+[candidateEmail]
+type = 'string'
+sort = true
+autoSuggestion = true
+
+[facultyId]
+type = 'string'
+
+[designation]
+type = 'string'
+
+[candidateInstituteName]
+type = 'string'
+sort = true
+
+[instituteCity]
+type = 'string'
+sort = true
+
+[instituteState]
+type = 'string'
+sort = true
+
+[candidateMobilenumber]
+type = 'string'
+
+[stayArrangement]
+type = 'string'
+
+[gender]
+type = 'string'
+sort = true
+
+[fulldesignation]
+type = 'string'
+
+[aadharNumber]
+type = 'string'
+
+[residenceAddress]
+type = 'string'
+
+[teachingex]
+type = 'string'
+
+[affiliationAICTE]
+type = 'string'
+
+[candidate_instituteid]
+type = 'string'
+
+[havefaculty_id]
+type = 'string'
+
+[candidate_facultyid]
+type = 'string'
+
+[venueFDP]
+type = 'string'
+
+[typeFDP]
+type = 'string'
+
+[dateFrom]
+type = 'string'
+
+[dateTo]
+type = 'string'
+
+[region]
+type = 'string'
+
+[lcDetails]
+type = 'string'
+
+[totalAttendance]
+type = 'string'
+
+[attendance]
+type = 'string'
+
+[verification]
+type = 'string'

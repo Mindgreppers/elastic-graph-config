@@ -14,9 +14,6 @@ export const indexCsv = async (egClient, filePath, indexName, additionalKeyValue
         //indexData called resolve() when the whole file is processed
         indexData(resolve, egClient, filePath, indexName, additionalKeyValuePairs, surveyOptions);
     })
-    .then(() => {
-        console.log('csvIndexer: indexed', indexName);
-    })
 };
 
 const ensureIndexExists = async (egClient, indexName) => {
@@ -51,7 +48,7 @@ const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs
 
     inputStream
         .pipe(new CsvReadableStream({ parseNumbers: true, parseBooleans: true, trim: true, skipHeader: true, delimiter: ";", asObject: true }))
-        .on('data', async function(row) {
+        .on('data', (row) => {
             sanitizeRow(row, surveyOptions)
             if (additionalKeyValuePairs) {
                 row = {...row, ...additionalKeyValuePairs};
@@ -61,7 +58,7 @@ const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs
                 return
             }
             encountered++
-            await client.index.collect({
+            client.index.collect({
                     index: indexName,
                     body: row
                 })
@@ -74,13 +71,14 @@ const indexData = (resolve, client, filePath, indexName, additionalKeyValuePairs
                     if (allRowsParsed && handled === encountered) {
                         console.timeEnd('duration')
                         console.log(`Parsed rows ${handled}. Errored out ${erroredOut}`)
+                        resolve();
                     }
                 })
         })
         .on('end', function(data) {
             console.log('No more rows!');
             allRowsParsed = true
-            resolve();
+            
         });
 }
 
@@ -137,3 +135,16 @@ function sanitizeRow(row, {numericalColumns, includedColumns}) {
         }
     })
 }
+
+import config from './extract-transform-save/data_config.mjs'
+import ElasticGraph from 'elasticgraph';
+const es = new ElasticGraph(process.argv[2]);
+
+const indexCycles = async (numCycles) => {
+    await indexCsv(es, "/media/ayush/52A85AD0A85AB1E9/Users/ayush/work/elasticcms/elastic-graph-config/data-pipelines/workshop_sample1/from_AICTE/semi-processed/registration.csv", 'aicte_registrations', {workshopCode: "sample_1"}, config.sources.aicte.registrations);
+    if (numCycles > 0) {
+        await indexCycles (numCycles -1)
+    };
+};
+
+indexCycles(100, )

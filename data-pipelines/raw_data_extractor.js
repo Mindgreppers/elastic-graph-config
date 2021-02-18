@@ -24,14 +24,19 @@ const extractRawDataInES = async (egClient, workshopDataFolderPath) => {
     console.time('Extracting attendance and poll data');
     const attendateAndPollDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Zoom', 'semi-processed'].join('/'); 
     const x = await extractAttendanceAndPollsData (egClient, workshopCode, attendateAndPollDataFolderPath);
-    console.timeEnd('Extracting attendance and poll data')
+    console.timeEnd('Extracting attendance and poll data');
+
+    console.time('Extracting attendance and poll data');
+    const quizKeyPath = [process.cwd(), workshopDataFolderPath, 'quiz_key.csv'];
+    await extractQuizKeys(egClient, quizKeyPath);
+    console.timeEnd('Extracting attendance and poll data');
 }
-
 const extractRegistrations = async (egClient, workshopCode, registrationCsvPath) => {
-    await indexCsv(egClient, registrationCsvPath, 'raw_registrations', {workshopCode}, config.sources.aicte.registrations);
+    await egClient.indexCsv(registrationCsvPath, 'raw_registrations', {workshopCode}, config.sources.aicte.registrations);
+};
 
-
-
+const extractQuizKeys = async (egClient, workshopCode, quizKeyCsvPath) => {
+    await egClient.indexCsv(quizKeyCsvPath, 'quiz_key');
 };
 
 const extractSurveysEtc = async (egClient, workshopCode, surveysFolderPath) => {

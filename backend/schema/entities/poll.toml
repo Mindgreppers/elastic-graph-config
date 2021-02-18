@@ -1,3 +1,16 @@
 [type]
 sort = true
 type = 'String'
+
+[day]
+type = 'Number'
+
+[session]
+type = 'String'
+enum = ['morning', 'evening']
+description = 'Whether this is a morning or evening session'
+
+[uhvCode]
+type = 'String'
+sort = true
+description = 'The code marked by UHV team in the poll questions'

@@ -1,0 +1,45 @@
+import Debug from 'debug';
+import ElasticGraph from 'elasticgraph';
+import minimist from 'minimist';
+import _ from 'lodash';
+
+import csvDataExtractor from './csv-data-extractor.mjs';
+import importConfig from './data_config.mjs';
+
+const debug = new Debug('ETS:index');
+
+var argv = minimist(process.argv.slice(2));
+
+const es = new ElasticGraph(argv.configPath);
+
+import {
+    saveWorkshop,
+    saveUsersStatesCitiesFromAICTE,
+    saveWorkshopAttendancesAlongWithNonRegisteredUsers,
+    saveDifferentGoogleForms,
+    savePollData
+} from './scripts.mjs';
+
+
+
+//Extract raw data from csvs and dump in the database
+if (argv.extractRawData) {
+    debug('Starting extraction of csv data into ElasticSearch');
+    const workshopDataFolderPath = argv.workshopDataFolder;
+    await csvDataExtractor(es, workshopDataFolderPath, importConfig.sources);
+    debug('Finished extraction of csv data into ElasticSearch.');
+};
+
+if (argv.transformAndSave) {
+    debug('Starting transformation of raw data and save in our schema');
+    await es.runScripts([
+        //saveWorkshop(argv.workshopId),
+        //saveUsersStatesCitiesFromAICTE,
+        //...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
+        //saveDifferentGoogleForms,
+        ...savePollData(argv.workshopId)
+    ]);
+    debug('Saved transformed data. Please check database now, for data sanctity.');
+};
+
+debug('Done!');

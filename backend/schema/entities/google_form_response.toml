@@ -1,0 +1,16 @@
+[formType]
+type = 'string'
+sort = true
+autoSuggestion = true
+
+[name]
+type = 'string'
+sort = true
+autoSuggestion = true
+
+[emailAddress]
+type = 'string'
+autoSuggestion = true
+
+[timestamp]
+type = 'string'

@@ -23,8 +23,3 @@
 [attendance]
   user{emailId}
   workshop{name}
-[user-question-answer]
-  user{emailId}
-  question{text}
-  question.polls{type}
-  question.polls.workshop{name}

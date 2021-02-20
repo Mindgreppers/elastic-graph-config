@@ -33,7 +33,7 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
-        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 1 at a time. Flush every 4 cycles. Wait for 500 millis`, [
+        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 200 at a time. Flush every 4 cycles. Wait for 500 millis`, [
             'search first user where {emailId: *raw_attendance.email} as user. Create if not exists.',
             //'display *user',
             //Next: If the user was newly created in previous statement, 

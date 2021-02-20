@@ -20,7 +20,7 @@ import {
     savePollData
 } from './scripts.mjs';
 
-
+console.time('ETL Time')
 
 //Extract raw data from csvs and dump in the database
 if (argv.extractRawData) {
@@ -33,13 +33,13 @@ if (argv.extractRawData) {
 if (argv.transformAndSave) {
     debug('Starting transformation of raw data and save in our schema');
     await es.runScripts([
-        //saveWorkshop(argv.workshopId),
-        //saveUsersStatesCitiesFromAICTE,
-        //...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
-        //saveDifferentGoogleForms,
+        saveWorkshop(argv.workshopId),
+        saveUsersStatesCitiesFromAICTE,
+        ...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
+        saveDifferentGoogleForms,
         ...savePollData(argv.workshopId)
     ]);
     debug('Saved transformed data. Please check database now, for data sanctity.');
 };
-
+console.timeEnd('ETL Time')
 debug('Done!');

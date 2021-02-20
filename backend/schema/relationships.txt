@@ -47,9 +47,17 @@ user-question-answer <> user
 	user <> user-question-answer
 	do not store foreign keys in user
 
+user-question-answers <> workshop
+	workshop <> [user-question-answer]
+	do not store foreign keys in workshop
+
+user-question-answers <> poll
+	poll <> [user-question-answer]
+	do not store foreign keys in poll
+
 polls <> questions
 	[question] <> [poll]
 	do not store foreign keys in question
 
-workshop <> polls
-	[poll] <> workshop
+workshops <> polls
+	[poll] <> [workshop]

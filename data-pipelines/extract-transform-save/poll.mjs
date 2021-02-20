@@ -1,7 +1,8 @@
+import _ from "lodash";
 
 export default (workshopCode) => {
     const instructions = [];
-    for (let day = 3; day <= 5; day++) {
+    for (let day = 1; day <= 5; day++) {
         instructions.push(savePollResponses(workshopCode, day, 'morning'));    
     };
 
@@ -15,16 +16,18 @@ export default (workshopCode) => {
 const savePollResponses = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as raw_poll. Get 1 at a time. Flush every 2 cycles. Wait for 500 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as raw_poll. Get 250 at a time. Flush every 2 cycles. Wait for 500 millis`, [
             'search first user where {emailId: *raw_poll.userEmail} as user.',            
             'if *user is empty, stop here.',
             //'display *raw_poll',
             setPollTypeInContext, //sets pollType variable in ctx depending on quizCode entered by UHS
-            `search first poll where {workshop._id: ${workshopCode}, day: ${day}, session: ${session}, pollType: *pollType, } as poll. Create if not exists.`,
+            `search first poll where {day: ${day}, session: ${session}, pollType: *pollType, } as poll. Create if not exists.`,
+            'link *poll with *workshop as workshops',
             createQuestionsIfNewAndSaveUserResponse,          
         ]
     ]
 };
+
 //Type, day, session
 const setPollTypeInContext = (ctx) => {
     let firstQuestion = ctx.get('raw_poll')._source['_0']; //First question should have this column name
@@ -60,32 +63,48 @@ const createQuestionsIfNewAndSaveUserResponse = async (ctx) => {
             }
         })
         .map ((columnName) => {
+            //Make sure to remove the quiz number from the question
+            const indexOfHash = rawPoll[columnName].indexOf("#");
+            const questionText = rawPoll[columnName].substr(0, indexOfHash);
             return [
-                `search first question where {text: "${rawPoll[columnName]}"} as question. Create if not exists.`,
+                `search first question where {text: "${questionText}"} as question. Create if not exists.`,
                 'link *question with *poll as polls',
                 async (ctx) => { //set isAnswerCorrect
                     if (ctx.get('pollType') === 'poll') {
-                        return;
+                        return ctx;
                     }
                     const answerColumn = `_${+columnName.substr(1) + 1}`;
-                    let optionCode = rawPoll[answerColumn].match(/#([^#]*)#/);
+                    const answer = rawPoll[answerColumn];
+                    if (!answer) {//Meants that the question was not answered by user
+                        return ctx.setImmutable('ignoreThisQuestion', 1);
+                    }
+                    if (answer.includes(';')) {
+                        answer = answer.split(';')[0];
+                    }
+
+                    let optionCode = answer.match(/#([^#]*)#/);
                     optionCode = optionCode && optionCode[1];
-                    const quizKey = await ctx.es.dsl.execute('search first quiz_key where {optionCode: *optionCode}', ctx);
+                    
+                    const quizKey = await ctx.es.dsl.execute(`search first quiz_key where {optionCode: ${optionCode}}`, ctx);
+                    
                     const marks = +quizKey[0]._source.marks;
                     if (marks) {
-                        return ctx.setImmutable('isCorrectAnswer', true);
+                        ctx = ctx.setImmutable('isCorrectAnswer', 1);
                     } else {
-                        return ctx.setImmutable('isCorrectAnswer', false);
+                        ctx = ctx.setImmutable('isCorrectAnswer', 0);
                     }
+                    return ctx;
                 },
-                
-                `uqa is {
+                //'display *poll',
+                `if *ignoreThisQuestion is empty, uqa is {
                     _type: user-question-answer,
                     user._id: *user._id,
                     question._id: *question._id,
-                    isCorrect: *isCorrectAnswer
+                    isCorrect: *isCorrectAnswer,
+                    workshop._id: *workshop._id,
+                    poll._id: *poll._id
                 }`,
-                'index *uqa'
+                'if *ignoreThisQuestion is empty, index *uqa'
             ];
             //Not filling choices of answers for now.
         });

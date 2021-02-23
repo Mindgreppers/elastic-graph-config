@@ -1,7 +1,9 @@
 import _ from "lodash";
 
 export default (workshopCode) => {
+    
     const instructions = [];
+    //instructions.push(loadQuizKeys());
     for (let day = 1; day <= 5; day++) {
         instructions.push(savePollResponses(workshopCode, day, 'morning'));    
     };
@@ -12,11 +14,22 @@ export default (workshopCode) => {
 
     return instructions;
 };
-
+const loadQuizKeys = () => {
+    return [
+        'quiz_keys is {}',
+        'iterate over quiz_keys as quiz_key. Get 1000 at a time.', [
+            (ctx) => {
+                const quizKey = ctx.get('quiz_key');
+                const optionCode = quizKey._source.optionCode;
+                quiz_keys[optionCode] = quizKey._source.marks;
+            }
+        ]
+    ]
+}
 const savePollResponses = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as raw_poll. Get 250 at a time. Flush every 2 cycles. Wait for 500 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as raw_poll. Get 500 at a time. Flush every 10 cycles. Wait for 300 millis`, [
             'search first user where {emailId: *raw_poll.userEmail} as user.',            
             'if *user is empty, stop here.',
             //'display *raw_poll',
@@ -74,7 +87,7 @@ const createQuestionsIfNewAndSaveUserResponse = async (ctx) => {
                         return ctx;
                     }
                     const answerColumn = `_${+columnName.substr(1) + 1}`;
-                    const answer = rawPoll[answerColumn];
+                    let answer = rawPoll[answerColumn];
                     if (!answer) {//Meants that the question was not answered by user
                         return ctx.setImmutable('ignoreThisQuestion', 1);
                     }

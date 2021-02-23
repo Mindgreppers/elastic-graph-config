@@ -33,7 +33,7 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
-        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 200 at a time. Flush every 4 cycles. Wait for 500 millis`, [
+        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 500 at a time. Flush every 8 cycles. Wait for 500 millis`, [
             'search first user where {emailId: *raw_attendance.email} as user. Create if not exists.',
             //'display *user',
             //Next: If the user was newly created in previous statement, 
@@ -59,24 +59,24 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
             //and create not exists" instruction above, it needs to be saved as non AICTE registered user.
             
             //Create and save attendance record anyway
-            `attendance is {
-                _type: attendance, 
-                user._id: *user._id,
-                joinTime: *raw_attendance.joinTime,
-                leaveTime: *raw_attendance.leaveTime,
-                timeInSession: *raw_attendance.timeInSession,
-                dayNumber: ${day},
-                sessionType: ${session},
-                workshop._id: ${workshopCode}
-            }`,
+            // `attendance is {
+            //     _type: attendance, 
+            //     user._id: *user._id,
+            //     joinTime: *raw_attendance.joinTime,
+            //     leaveTime: *raw_attendance.leaveTime,
+            //     timeInSession: *raw_attendance.timeInSession,
+            //     dayNumber: ${day},
+            //     sessionType: ${session},
+            //     workshop._id: ${workshopCode}
+            // }`,
             //Index in cache, to be later flushed in ES
-            'index *attendance'
+            //'index *attendance'
         ]
     ];
 };
 
 export const saveUsersStatesCitiesFromAICTE = [
-    'iterate over aicte_registrations as raw_user. Get 200 at a time. Flush every 2 cycles. Wait for 1000 millis.', [
+    'iterate over aicte_registrations as raw_user. Get 200 at a time. Flush every 10 cycles. Wait for 500 millis.', [
         'search first state where {name: *raw_user.instituteState}. Create if not exists.',
         'search first city where {name: *raw_user.instituteCity, state._id: *state._id}. Create if not exists.',
         'user is {_type: user, registeredAICTE: true, state._id: *city.state._id, city._id: *city._id, emailId: *raw_user.candidateEmail, name: *raw_user.candidateName, registeredAICTE: true}',
@@ -93,7 +93,7 @@ export const saveDifferentGoogleForms = () => {
 
 const googleFormImportInstructions = (formType) => {
     return [
-        `iterate over ${formType} as formEntry. Get 100 at a time. Flush every 2 cycles. Wait for 1000 millis.`, [
+        `iterate over ${formType} as formEntry. Get 450 at a time. Flush every 10 cycles. Wait for 500 millis.`, [
             //formResponse is {formType: ${formType}, ...formEntry(name, emailAddress,timestamp)}
             `formResponse is {_type:  google_form_response,formType: ${formType}, name: *formEntry.name, emailAddress: *formEntry.emailAddress, timestamp: *formEntry.timestamp}`,
             'index *formResponse'

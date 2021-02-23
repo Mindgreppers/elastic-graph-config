@@ -36,7 +36,7 @@ if (argv.transformAndSave) {
         saveWorkshop(argv.workshopId),
         saveUsersStatesCitiesFromAICTE,
         ...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
-        saveDifferentGoogleForms,
+        ...saveDifferentGoogleForms(),
         ...savePollData(argv.workshopId)
     ]);
     debug('Saved transformed data. Please check database now, for data sanctity.');

@@ -21,8 +21,7 @@ const savePollResponses = (workshopCode, day, session) => {
             'if *user is empty, stop here.',
             //'display *raw_poll',
             setPollTypeInContext, //sets pollType variable in ctx depending on quizCode entered by UHS
-            `search first poll where {day: ${day}, session: ${session}, pollType: *pollType, } as poll. Create if not exists.`,
-            'link *poll with *workshop as workshops',
+            `search first poll where {day: ${day}, session: ${session}, pollType: *pollType, workshop._id: ${workshopCode} } as poll. Create if not exists.`,
             createQuestionsIfNewAndSaveUserResponse,          
         ]
     ]
@@ -65,7 +64,8 @@ const createQuestionsIfNewAndSaveUserResponse = async (ctx) => {
         .map ((columnName) => {
             //Make sure to remove the quiz number from the question
             const indexOfHash = rawPoll[columnName].indexOf("#");
-            const questionText = rawPoll[columnName].substr(0, indexOfHash);
+            const questionText = indexOfHash === -1 ? 
+                rawPoll[columnName] : rawPoll[columnName].substr(0, indexOfHash);
             return [
                 `search first question where {text: "${questionText}"} as question. Create if not exists.`,
                 'link *question with *poll as polls',

@@ -34,9 +34,9 @@ if (argv.transformAndSave) {
     debug('Starting transformation of raw data and save in our schema');
     await es.runScripts([
         saveWorkshop(argv.workshopId),
-        saveUsersStatesCitiesFromAICTE,
-        ...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
-        ...saveDifferentGoogleForms(),
+        //saveUsersStatesCitiesFromAICTE,
+        //...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
+        //...saveDifferentGoogleForms(),
         ...savePollData(argv.workshopId)
     ]);
     debug('Saved transformed data. Please check database now, for data sanctity.');

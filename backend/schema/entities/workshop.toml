@@ -16,3 +16,9 @@ multiLingual = false
 sort = true
 type = 'date'
 multiLingual = false
+
+[quizQuestionCount]
+type = 'number'
+
+[numQuestionsTest]
+type = 'number'

@@ -18,26 +18,26 @@ export default async (egClient, workshopDataFolderPath, {aicte, googleForms, zoo
     //Code is stored in the name after workshop_{code}
     workshopCode = workshopCode.split('_')[1]
 
-    if (argv.aicte) {
+    if (!argv.aicte) {
         const registrationDataFilePath = [process.cwd(), workshopDataFolderPath, 'from_AICTE', 'semi-processed', 'registration.csv'].join('/');
         console.time('Extracting registration data from AICTE');
         await egClient.indexCsv(registrationDataFilePath, 'aicte_registrations', {workshopCode}, config.sources.aicte.registrations);
         console.timeEnd('Extracting registration data from AICTE');
     }
-    if (argv.googleForms) {
+    if (!argv.googleForms) {
         console.time('Extracting survey data from Google Forms')
         const surveyDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Google_Forms', 'semi-processed'].join('/');
         await extractCsvFolder(egClient, workshopCode, surveyDataFolderPath, config.sources.googleForms);
         console.timeEnd('Extracting survey data from Google Forms');
     }
-    if (argv.zoom) {
+    if (!argv.zoom) {
         console.time('Extracting attendance and poll data');
         const attendateAndPollDataFolderPath = [process.cwd(), workshopDataFolderPath, 'from_Zoom', 'semi-processed'].join('/'); 
         const x = await extractCsvFolder(egClient, workshopCode, attendateAndPollDataFolderPath, config.sources.zoom);
         console.timeEnd('Extracting attendance and poll data')
     }
 
-    if (argv.quizKey) {
+    if (!argv.quizKey) {
         console.time('Extracting quiz_key data');
         const quizKeyFilePath = [process.cwd(), workshopDataFolderPath, 'quiz_key.csv'].join('/'); 
         await egClient.indexCsv(quizKeyFilePath, 'quiz_keys');
@@ -63,6 +63,9 @@ const extractCsvFolder = async (egClient, workshopCode, csvFolderPath, dataSourc
         const fullFilePath = `${csvFolderPath}/${fileName}`;
         //Extract indexName from {{indexName}}.csv
         const indexName = fileName.split('.')[0];
+        // if (indexName !== 'day_2_evening_poll_report') {
+        //     return promiseSoFar;
+        // }
         return promiseSoFar
         .then(async () => {
             await sleep(2000);

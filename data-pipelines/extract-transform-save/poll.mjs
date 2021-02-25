@@ -32,38 +32,53 @@ const savePollResponses = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
         
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as userPollAttempt. Get 500 at a time. Flush every 10 cycles. Wait for 300 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 2 cycles. Wait for 300 millis`, [
             
-            'search first user where {emailId: *userPollAttempt.userEmail} as user.',            
-            (ctx) => {
-                if (!ctx.get('user')) {
-                    cerr++;
-                } else {
-                    c++;
-                    if (ctx.get('user')._source.emailId !== ctx.get('userPollAttempt')._source.userEmail) {
-                        console.log('dsdsd', ctx.get('user')._source.emailId, ctx.get('userPollAttempt')._source.userEmail)
-                    }
-                }
-            },
+            'search first user where {emailId: *rawPoll.userEmail} as user.',    
+            'if *user is empty, display found empty user',
             'if *user is empty, stop here.',
             
-            setPollTypeInContext, //sets pollType variable in ctx depending on quizCode entered by UHS
-            (ctx) => {
-                if (!ctx.get('pollType')) {
-                    perr++;
-                } else {
-                    p++;
-                }
-                console.log('poll attempts', p, perr, 'users', c, cerr);
-            },
-            `if *pollType is empty, stop here.`, //Means the poll was not attempted at all
-            `if *pollType is empty, display XXX`,
-            //Search and create if necessary, the poll
-            `search first poll where {day: ${day}, session: ${session}, pollType: *pollType, workshop._id: ${workshopCode} } as poll. Create if not exists.`,
-            `search first user-poll where {poll._id: *poll._id, user._id: *user._id} as userPollAttempt. Create if not exists.`,
-            //Create user-poll document to store user's attempted questions and marks
-            //createUserPollInfoDoc,
+            //Handle poll response of this user.
 
+            //Set polls unique id and pollType in the rawPoll object.
+            //Used in creating the new poll object later.
+            (ctx) => {
+                
+                const rawPoll = ctx.get('rawPoll');
+                
+                //Set the poll type based on the codes embedded in the questions
+                setPollTypeInRawPoll(rawPoll._source);
+
+                //Decide the uniqueId for this poll based on questions
+                //Concat all questions and remove all whitespace
+                const questionColumns = getQuestionsColumns(rawPoll._source);
+                const questionTexts = questionColumns.map((qc) => rawPoll._source[qc]);
+                rawPoll.uniqueId = questionTexts.join('').replace(/\s/g, '');
+                
+            },
+
+            //If the poll was not attempted at all, don't proceed.
+            `if *rawPoll.pollType is empty, stop here.`, 
+
+            //Search the poll. Create if not existing.
+            `pollQuery is {
+                day: ${day}, 
+                session: ${session}, 
+                pollType: *rawPoll.pollType, 
+                workshop._id: ${workshopCode}, 
+                uniqueId: *rawPoll.uniqueId
+            }`,
+            `search first poll where *pollQuery as poll. Create if not exists.`,
+            
+            //Create user-poll document to store user's attempted questions and marks
+            
+            `userPollAttempt is {
+                _type: user-poll,
+                poll._id: *poll._id, 
+                user._id: *user._id
+            }`,
+            'index *userPollAttempt',
+            
             //Save user's marks in previously created user-poll document
             //for all the questions attempted by him/her for this poll
             saveUserPollMarks
@@ -71,8 +86,8 @@ const savePollResponses = (workshopCode, day, session) => {
     ]
 };
 
-const setPollTypeInContext = (ctx) => {
-    let firstQuestion = ctx.get('userPollAttempt')._source['_0']; //First question should have this column name
+const setPollTypeInRawPoll = (rawPollSource) => {
+    let firstQuestion = rawPollSource['_0']; //First question should have this column name
     
     //If no question was attempted, we let pollType be undefined because poll type is stored in the questions, 
     //in the input data;
@@ -95,38 +110,18 @@ const setPollTypeInContext = (ctx) => {
     } else {
         pollType = 'poll'
     }
-    return ctx.setImmutable('pollType', pollType);
+    rawPollSource.pollType = pollType;
 }
 
-const createUserPollInfoDoc = async (ctx) => {
-    
-    const scripts = [
-        `userPollAttempt is {
-            _type: user-poll,
-            poll._id: *poll._id, 
-            user._id: *user._id
-        }`,
-        'index *userPollAttempt',
-    ];
-    await ctx.es.dsl.execute(scripts, ctx);
-};
-
 const saveUserPollMarks = async (ctx) => {
-    let rawPoll = ctx.get('userPollAttempt');
-    rawPoll = rawPoll._source || rawPoll.fields;
+    let rawPollSource = ctx.get('rawPoll')._source;
     
     //All questions and answer columns are of the format _N where N is number
     //A column of question is followed by a column of answer.
-    const questions = Object.keys(rawPoll)
-        .filter((columnName) => {
-            const numericalPart = columnName.match('^_(\\d+)$'); //_N
-            if (numericalPart && (numericalPart[1] % 2) === 0) { //If matched number is an even number
-                return true; //Only even numbered columns have questions. odd have answers.
-            }
-        });
     
+    const questions = getQuestionsColumns(rawPollSource);
     
-    const scriptsToRun = questionWiseScripts(rawPoll, questions);
+    const scriptsToRun = saveUserPollQAData(rawPollSource, questions);
     
     //Execute all the generated scripts and wait till all of them complete.
     await Promise.all(
@@ -136,7 +131,17 @@ const saveUserPollMarks = async (ctx) => {
     return ctx;
 };
 
-const questionWiseScripts = (rawPoll, questions) => {
+const getQuestionsColumns = (rawPollSource) => {
+    return Object.keys(rawPollSource)
+        .filter((columnName) => {
+            const numericalPart = columnName.match('^_(\\d+)$'); //_N
+            if (numericalPart && (numericalPart[1] % 2) === 0) { //If matched number is an even number
+                return true; //Only even numbered columns have questions. odd have answers.
+            }
+        });
+}
+
+const saveUserPollQAData = (rawPoll, questions) => {
     return questions.map ((questionColumn) => {
         //Get the question text, after removing the quiz/test/morning-quiz 
         //#number# from its tail-end
@@ -149,22 +154,22 @@ const questionWiseScripts = (rawPoll, questions) => {
             //Questions and marks are stored in user-poll table
             async (ctx) => {
                 //Ignore polls
-                if (ctx.get('pollType') === 'poll') {          
-                    return ctx;
+                if (rawPoll.pollType === 'poll') {          
+                    return;
                 }
                 
                 //Ignore not attempted questions
                 const answerColumn = `_${+questionColumn.substr(1) + 1}`;
                 let answer = rawPoll[answerColumn];
                 if (!answer) { 
-                    return ctx;
+                    return;
                 }
 
                 //Store the marks against the attempted question
+                //Not filling the user's actual answers as of now.
                 saveMarksForAttemptedQuestion(ctx, answer);
             }
         ];
-        //Not filling choices of answers for now.
     });
 }
 

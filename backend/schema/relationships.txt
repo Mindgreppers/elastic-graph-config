@@ -65,6 +65,8 @@ workshop <> polls
 
 user-polls <> poll
 	poll <> [user-poll]
+	do not store foreign keys in poll
 
 user-polls <> user
-	user <> [user-poll] 
+	user <> [user-poll]
+	do not store foreign keys in user

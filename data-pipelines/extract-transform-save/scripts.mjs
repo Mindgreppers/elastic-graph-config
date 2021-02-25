@@ -58,19 +58,24 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
             //'if *user.registeredAICTE is false, display *user.', //If user was created with "Search by email 
             //and create not exists" instruction above, it needs to be saved as non AICTE registered user.
             
+            //'if *raw_attendance.joinTime is empty, display *raw_attendance._id.',
+            //'if *raw_attendance.joinTime is empty, stop here.',//Dont save empty attendance records
+
             //Create and save attendance record anyway
-            // `attendance is {
-            //     _type: attendance, 
-            //     user._id: *user._id,
-            //     joinTime: *raw_attendance.joinTime,
-            //     leaveTime: *raw_attendance.leaveTime,
-            //     timeInSession: *raw_attendance.timeInSession,
-            //     dayNumber: ${day},
-            //     sessionType: ${session},
-            //     workshop._id: ${workshopCode}
-            // }`,
+            
+            
+            `attendance is {
+                _type: attendance, 
+                user._id: *user._id,
+                joinTime: *raw_attendance.joinTime,
+                leaveTime: *raw_attendance.leaveTime,
+                timeInSession: *raw_attendance.timeInSession,
+                dayNumber: ${day},
+                sessionType: ${session},
+                workshop._id: ${workshopCode}
+            }`,
             //Index in cache, to be later flushed in ES
-            //'index *attendance'
+            'index *attendance'
         ]
     ];
 };

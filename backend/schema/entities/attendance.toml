@@ -7,6 +7,8 @@ type = 'date'
 
 [timeInSession]
 type = 'Number'
+sort = true
 
 [dayNumber]
 type = 'Number'
+sort = true

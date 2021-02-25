@@ -20,6 +20,3 @@
   college{name}
   designation{name}
   workshops{name}
-[attendance]
-  user{emailId}
-  workshop{name}

@@ -21,6 +21,3 @@
   designation{name}
   workshops{name}
   attendances{_id}
-[attendance]
-  user{emailId}
-  workshop{name}

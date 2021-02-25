@@ -34,6 +34,7 @@ user <> designation
 
 user <> attendances
 	[attendance] <> user
+	do not store foreign keys in user
 
 workshop <> attendances
 	[attendance] <> workshop

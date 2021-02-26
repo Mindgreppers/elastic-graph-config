@@ -1,6 +1,6 @@
 [batchSizes]
   msearch = 200
-  index = 400 
+  index = 900 
   mget = 200
   get = 200
   search = 400

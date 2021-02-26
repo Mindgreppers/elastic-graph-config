@@ -22,20 +22,21 @@ const loadQuizKeys = () => {
             (ctx) => {
                 const quizKey = ctx.get('quiz_key');
                 const optionCode = quizKey._source.optionCode;
+
                 quiz_keys[optionCode] = quizKey._source.marks;
             }
         ]
     ]
 }
-let c = 0, cerr = 0, p = 0, perr = 0;
+//let c = 0, cerr = 0, p = 0, perr = 0;
 const savePollResponses = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
         
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 2 cycles. Wait for 300 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 5 cycles. Wait for 300 millis`, [
             
             'search first user where {emailId: *rawPoll.userEmail} as user.',    
-            'if *user is empty, display found empty user',
+            'if *user is empty, display found empty user, *rawPoll.userEmail',
             'if *user is empty, stop here.',
             
             //Handle poll response of this user.
@@ -53,7 +54,8 @@ const savePollResponses = (workshopCode, day, session) => {
                 //Concat all questions and remove all whitespace
                 const questionColumns = getQuestionsColumns(rawPoll._source);
                 const questionTexts = questionColumns.map((qc) => rawPoll._source[qc]);
-                rawPoll.uniqueId = questionTexts.join('').replace(/\s/g, '');
+                rawPoll.uniqueId = //Remove all non letter, non number or not ,.: characters
+                    questionTexts.join('').replace(/[^a-zA-Z0-9\.,:!']/g);
                 
             },
 
@@ -145,10 +147,11 @@ const saveUserPollQAData = (rawPoll, questions) => {
     return questions.map ((questionColumn) => {
         //Get the question text, after removing the quiz/test/morning-quiz 
         //#number# from its tail-end
-        const questionText = getQuestionText(rawPoll[questionColumn]);
+        let questionText = getQuestionText(rawPoll[questionColumn]);
+        questionText = questionText.replace(/[^a-zA-Z\.,:!']/g, '');
 
         return [
-            `search first question where {text: "${questionText}"} as question. Create if not exists.`,
+            `search first question where {uniqueId: "${questionText}"} as question. Create if not exists.`,
             'link *question with *poll as polls',
             //Give marks to answers in test, quiz, morning quiz
             //Questions and marks are stored in user-poll table
@@ -167,7 +170,7 @@ const saveUserPollQAData = (rawPoll, questions) => {
 
                 //Store the marks against the attempted question
                 //Not filling the user's actual answers as of now.
-                saveMarksForAttemptedQuestion(ctx, answer);
+                await saveMarksForAttemptedQuestion(ctx, answer);
             }
         ];
     });
@@ -178,10 +181,10 @@ const getQuestionText = (fullText) => {
     return indexOfHash === -1 ? fullText : fullText.substr(0, indexOfHash);
 };
 
-const saveMarksForAttemptedQuestion = (ctx, answer) => {
+const saveMarksForAttemptedQuestion = async (ctx, answer) => {
     const userPoll = ctx.get('user-poll');
     const question = ctx.get('question');
-    const marks = getMarks(ctx, answer);
+    const marks = await getMarks(ctx, answer);
     updateDoc({
         doc: userPoll._source,
         force: true,

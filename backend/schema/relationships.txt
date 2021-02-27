@@ -70,3 +70,11 @@ user-polls <> poll
 user-polls <> user
 	user <> [user-poll]
 	do not store foreign keys in user
+
+user-workshops <> user
+	user <> [user-workshop]
+	do not store foreign keys in user
+
+user-workshops <> workshop
+	workshop <> [user-workshop]
+	do not store foreign keys in workshop

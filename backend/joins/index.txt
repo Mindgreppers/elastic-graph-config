@@ -20,3 +20,6 @@
   college{name}
   designation{name}
   workshops{name}
+[user-poll]
+  poll{pollType}
+  poll.workshop{_id}

@@ -1,2 +1,8 @@
-[marks]
+[questionWiseMarks]
 type = ['object']
+
+[totalMarks]
+type = 'number'
+
+[numAnswers]
+type = 'number'

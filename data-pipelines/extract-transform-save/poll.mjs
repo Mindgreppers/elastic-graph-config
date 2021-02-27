@@ -228,14 +228,19 @@ const addMarksAttemptsToWorkshopPerformance = async (ctx) => {
             //Get the current aggregated data for this poll's type or initialize to empty
             const pollType = ctx.get('poll')._source.pollType;
             
-            let {totalMarks, numAnswers} = userWorkshopData._source[pollType] || {totalMarks: 0, numAnswers: 0, } 
+            let {totalMarks, numAnswers, numPollsAttempted} = userWorkshopData._source[pollType] || {
+                    totalMarks: 0, 
+                    numAnswers: 0, 
+                    numPollsAttempted: 0
+                };
+             
             //Increment user's marks and attempts count from this poll, into workshop's pollType aggregated data
             const userPoll = ctx.get('user-poll');
             totalMarks += userPoll._source.totalMarks || 0;
             numAnswers += userPoll._source.numAnswers;
-
+            numPollsAttempted += 1;
             //Set in the in memory object, for later indexing in the database
-            userWorkshopData._source[pollType] = {totalMarks, numAnswers};
+            userWorkshopData._source[pollType] = {totalMarks, numAnswers, numPollsAttempted};
             
             ctx.markDirtyEntity(userWorkshopData);
         }

@@ -5,7 +5,7 @@ export default (workshopCode) => {
     
     const instructions = [];
     //instructions.push(loadQuizKeys());
-    for (let day = 1; day <= 5; day++) {
+    for (let day = 4; day <= 5; day++) {
         instructions.push(savePollResponses(workshopCode, day, 'morning'));    
     };
 
@@ -43,11 +43,14 @@ const savePollResponses = (workshopCode, day, session) => {
 
             //Set polls unique id and pollType in the rawPoll object.
             //Used in creating the new poll object later.
+            //If not question was attempted by user, dont create the poll or proceed further.
+            //Proceed only if the user attempted at least one question
             (ctx) => {
                 
                 const rawPoll = ctx.get('rawPoll');
                 
                 //Set the poll type based on the codes embedded in the questions
+                //If user did not attempt any question, pollType will be set as null
                 setPollTypeInRawPoll(rawPoll._source);
 
                 //Decide the uniqueId for this poll based on questions
@@ -59,10 +62,11 @@ const savePollResponses = (workshopCode, day, session) => {
                 
             },
 
-            //If the poll was not attempted at all, don't proceed.
+            //If the poll was not attempted at all, pollType is not set.
+            //Hence don't proceed if pollType is null.
             `if *rawPoll.pollType is empty, stop here.`, 
 
-            //Search the poll. Create if not existing.
+            //Search the poll. Create if not existing. For found
             `pollQuery is {
                 day: ${day}, 
                 session: ${session}, 
@@ -80,10 +84,12 @@ const savePollResponses = (workshopCode, day, session) => {
                 user._id: *user._id
             }`,
             'index *userPollAttempt',
-            
             //Save user's marks in previously created user-poll document
             //for all the questions attempted by him/her for this poll
-            saveUserPollMarks
+            saveUserPollMarks,
+            
+            //Now save the workshop level data for this poll, and user.
+            addMarksAttemptsToWorkshopPerformance
         ]
     ]
 };
@@ -154,12 +160,9 @@ const saveUserPollQAData = (rawPoll, questions) => {
             `search first question where {uniqueId: "${questionText}"} as question. Create if not exists.`,
             'link *question with *poll as polls',
             //Give marks to answers in test, quiz, morning quiz
-            //Questions and marks are stored in user-poll table
+            //Questions and marks for this poll are stored in user-poll table
+            //Also add to the user's cumulative data for this workshop, from this poll
             async (ctx) => {
-                //Ignore polls
-                if (rawPoll.pollType === 'poll') {          
-                    return;
-                }
                 
                 //Ignore not attempted questions
                 const answerColumn = `_${+questionColumn.substr(1) + 1}`;
@@ -170,7 +173,7 @@ const saveUserPollQAData = (rawPoll, questions) => {
 
                 //Store the marks against the attempted question
                 //Not filling the user's actual answers as of now.
-                await saveMarksForAttemptedQuestion(ctx, answer);
+                await saveQuestionMarksInUserPoll(ctx, answer);
             }
         ];
     });
@@ -181,22 +184,65 @@ const getQuestionText = (fullText) => {
     return indexOfHash === -1 ? fullText : fullText.substr(0, indexOfHash);
 };
 
-const saveMarksForAttemptedQuestion = async (ctx, answer) => {
+const saveQuestionMarksInUserPoll = async (ctx, answer) => {
+    const pollType = ctx.get('poll')._source.pollType;
     const userPoll = ctx.get('user-poll');
-    const question = ctx.get('question');
-    const marks = await getMarks(ctx, answer);
-    updateDoc({
-        doc: userPoll._source,
-        force: true,
-        update: {
-            push: {
-                "marks": {
-                    [question._id]: marks 
+    
+    //Increment total answers attempted by the user
+    userPoll._source.numAnswers = (userPoll._source.numAnswers || 0) + 1;
+
+    //Compute poll totalMarks and also question wise marks for test, quiz, morning-quiz. Ignore type poll.
+    if (pollType != 'poll') {
+        
+        const marks = await getMarks(ctx, answer);    
+        //Set total marks
+        userPoll._source.totalMarks = (userPoll._source.totalMarks || 0) + marks;
+        //Set question wise marks
+        const question = ctx.get('question');
+        updateDoc({
+            doc: userPoll._source,
+            force: true,
+            update: {
+                push: {
+                    "questionWiseMarks": {
+                        [question._id]: marks 
+                    }
                 }
             }
-        }
-      });
+        });
+    }
 }
+
+const addMarksAttemptsToWorkshopPerformance = async (ctx) => {
+    //Get workshop data for this user
+    await ctx.es.dsl.execute([
+        
+        `userWorkshopDataQuery is {
+            user._id: *user._id, 
+            workshop._id: *workshop._id
+        }`,
+        'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+        (ctx) => {
+            
+            const userWorkshopData = ctx.get('userWorkshopData');
+            //Get the current aggregated data for this poll's type or initialize to empty
+            const pollType = ctx.get('poll')._source.pollType;
+            
+            let {totalMarks, numAnswers} = userWorkshopData._source[pollType] || {totalMarks: 0, numAnswers: 0, } 
+            //Increment user's marks and attempts count from this poll, into workshop's pollType aggregated data
+            const userPoll = ctx.get('user-poll');
+            totalMarks += userPoll._source.totalMarks || 0;
+            numAnswers += userPoll._source.numAnswers;
+
+            //Set in the in memory object, for later indexing in the database
+            userWorkshopData._source[pollType] = {totalMarks, numAnswers};
+            
+            ctx.markDirtyEntity(userWorkshopData);
+        }
+    ], ctx);
+    
+};
+
 
 const getMarks = async (ctx, answer) => {
     if (answer.includes(';')) {

@@ -75,7 +75,27 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
                 workshop._id: ${workshopCode}
             }`,
             //Index in cache, to be later flushed in ES
-            'index *attendance'
+            'index *attendance',
+
+            //Save total attendance time day and session wise, in user-workshop
+            'search first user-workshop where {user._id: *user._id, workshop._id: *workshop._id} as userWorkshopData. Create if not exists.',
+            (ctx) => {
+                const userWorkshop = ctx.get('userWorkshopData');
+                const userWorkshopData = userWorkshop._source;
+                userWorkshopData.sessionWiseMinutes = userWorkshopData.sessionWiseMinutes || {}; 
+                userWorkshopData.sessionWiseMinutes[day] = userWorkshopData.sessionWiseMinutes[day] || {
+                        'morning': 0, 
+                        'evening': 0
+                    };
+                
+                const attendance = ctx.get('attendance')._source;
+                
+                userWorkshopData.sessionWiseMinutes[day][attendance.sessionType] 
+                    += +(attendance.timeInSession || 0);
+                
+                //Mark it dirty for saving to DB during next ctx.flush() call
+                ctx.markDirtyEntity(userWorkshop);
+            }
         ]
     ];
 };

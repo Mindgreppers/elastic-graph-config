@@ -58,7 +58,7 @@ const savePollResponses = (workshopCode, day, session) => {
                 const questionColumns = getQuestionsColumns(rawPoll._source);
                 const questionTexts = questionColumns.map((qc) => rawPoll._source[qc]);
                 rawPoll.uniqueId = //Remove all non letter, non number or not ,.: characters
-                    questionTexts.join('').replace(/[^a-zA-Z0-9\.,:!']/g);
+                    questionTexts.join('').replace(/[^a-zA-Z']//g);
                 
             },
 
@@ -154,7 +154,7 @@ const saveUserPollQAData = (rawPoll, questions) => {
         //Get the question text, after removing the quiz/test/morning-quiz 
         //#number# from its tail-end
         let questionText = getQuestionText(rawPoll[questionColumn]);
-        questionText = questionText.replace(/[^a-zA-Z\.,:!']/g, '');
+        questionText = questionText.replace(/[^a-zA-Z\.,:!']//g, '');
 
         return [
             `search first question where {uniqueId: "${questionText}"} as question. Create if not exists.`,
@@ -192,7 +192,7 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
     userPoll._source.numAnswers = (userPoll._source.numAnswers || 0) + 1;
 
     //Compute poll totalMarks and also question wise marks for test, quiz, morning-quiz. Ignore type poll.
-    if (pollType != 'poll') {
+    if (pollType && pollType != 'poll') {
         
         const marks = await getMarks(ctx, answer);    
         //Set total marks

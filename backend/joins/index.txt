@@ -23,3 +23,5 @@
 [user-poll]
   poll{pollType}
   poll.workshop{_id}
+[poll]
+  questions{uniqueId}

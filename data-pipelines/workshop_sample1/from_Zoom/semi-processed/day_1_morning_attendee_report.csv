@@ -1,4 +1,5 @@
 attended;userName;firstName;lastName;email;registrationTime;approvalStatus;joinTime;leaveTime;timeInSession;country;sourceName;Column1
+Yes;G2-Mr. A# Mario Cassion Anand AP# Loyola ICAM College of Engineering and Technology# Chennai#;G2-Mr. A, Mario Cassion Anand;AP, Loyola ICAM College of Engineering and Technology, Chennai,;mariocassionanand.a@licet.ac.in;19-09-2020 19:16;approved;21-09-2020 08:46;21-09-2020 08:47;2;India;3;
 Yes;Dr. M. Vijay Anand;Dr. M. Vijay;Anand;vijayanand@kongu.ac.in;19-09-2020 23:51;approved;21-09-2020 09:10;21-09-2020 10:06;56;India;;
 Yes;Dr. M. Vijay Anand;Dr. M. Vijay;Anand;vijayanand@kongu.ac.in;;;21-09-2020 10:07;21-09-2020 13:44;218;India;;
 Yes;G1-Dr. AMBIT KUMAR PANY Asso. Prof# SIKSHA O ANUSANDHAN# BHUBANESWAR# Orrisa;G1-Dr. AMBIT KUMAR PANY;Asso. Prof, SIKSHA O ANUSANDHAN, BHUBANESWAR, Orrisa;ambitpany@soa.ac.in;20-09-2020 09:48;approved;21-09-2020 09:34;21-09-2020 10:25;52;India;1;
@@ -9,8 +10,7 @@ Yes;G1-Dr. AMBIT KUMAR PANY Asso. Prof# SIKSHA O ANUSANDHAN# BHUBANESWAR# Orrisa
 Yes;G1-Dr. AMBIT KUMAR PANY Asso. Prof# SIKSHA O ANUSANDHAN# BHUBANESWAR# Orrisa;G1-Dr. AMBIT KUMAR PANY;Asso. Prof, SIKSHA O ANUSANDHAN, BHUBANESWAR, Orrisa;ambitpany@soa.ac.in;;;21-09-2020 10:35;21-09-2020 10:36;1;India;;
 Yes;G1-Dr. AMBIT KUMAR PANY Asso. Prof# SIKSHA O ANUSANDHAN# BHUBANESWAR# Orrisa;G1-Dr. AMBIT KUMAR PANY;Asso. Prof, SIKSHA O ANUSANDHAN, BHUBANESWAR, Orrisa;ambitpany@soa.ac.in;;;21-09-2020 10:26;21-09-2020 10:27;1;India;;
 Yes;G2-Mr. Jagadish Chandra Padhi AP# SIKSHA O ANUSANDHAN# BHUBANESWAR# Orrisa;G2-Mr. Jagadish Chandra Padhi;AP, SIKSHA O ANUSANDHAN, BHUBANESWAR, Orrisa;jagadishpadhi@soa.ac.in;19-09-2020 17:24;approved;21-09-2020 09:31;21-09-2020 13:28;237;India;3;
-Yes;Dr. Rajatha Shety;Dr. Raj
-atha;Shety;rajatha@gmail.com;20-09-2020 09:22;approved;21-09-2020 09:33;21-09-2020 11:32;120;India;;
+Yes;Dr. Rajatha Shety;Dr. Rajatha;Shety;rajatha@gmail.com;20-09-2020 09:22;approved;21-09-2020 09:33;21-09-2020 11:32;120;India;;
 Yes;Dr. Rajatha Shety;Dr. Rajatha;Shety;rajatha@gmail.com;;;21-09-2020 11:32;21-09-2020 11:33;2;India;;
 Yes;Dr. Rajatha Shety;Dr. Rajatha;Shety;rajatha@gmail.com;;;21-09-2020 11:36;21-09-2020 13:37;121;India;;
 Yes;G1-Dr. Dr.Rajatha Asso. Prof# SDM Institute of Technology# Ujire# Karnataka;Dr. Rajatha;Shety;rajatha@gmail.com;;;21-09-2020 09:28;21-09-2020 09:32;5;India;;
@@ -893,7 +893,6 @@ Yes;SELVAKUMAR THANDAPANI;SELVAKUMAR;THANDAPANI;selvaccet@gmail.com;20-09-2020 0
 Yes;G2-Dr. SELVAKUMAR T AP# CHETTINAD COLLEGE OF ENGINEERING AND TECHNOLOGY# Karur# Tam;SELVAKUMAR;THANDAPANI;selvaccet@gmail.com;;;21-09-2020 09:33;21-09-2020 11:20;107;India;;
 Yes;G3-Mrs. Jayeeta Chatterjee Instructor# Techno MainSalt Lake# Kolkata# West Bengal;G3-Mrs. Jayeeta Chatterjee;Instructor, Techno MainSalt Lake, Kolkata, West Bengal;cjayeeta78@gmail.com;20-09-2020 12:07;approved;21-09-2020 09:28;21-09-2020 13:44;256;India;5;
 Yes;G2-Mr. Arindam Pal AP# Global Institute of Management and Technology# Krishnanagar;G2-Mr. Arindam Pal;AP, Global Institute of Management and Technology, Krishnanagar;arindam18052012@gmail.com;20-09-2020 01:28;approved;21-09-2020 09:34;21-09-2020 13:44;251;India;1;
-Yes;G2-Mr. A# Mario Cassion Anand AP# Loyola ICAM College of Engineering and Technology# Chennai#;G2-Mr. A, Mario Cassion Anand;AP, Loyola ICAM College of Engineering and Technology, Chennai,;mariocassionanand.a@licet.ac.in;19-09-2020 19:16;approved;21-09-2020 08:46;21-09-2020 08:47;2;India;3;
 Yes;G2-Mr. A# Mario Cassion Anand AP# Loyola ICAM College of Engineering and Technology# Chennai#;G2-Mr. A, Mario Cassion Anand;AP, Loyola ICAM College of Engineering and Technology, Chennai,;mariocassionanand.a@licet.ac.in;;;21-09-2020 09:35;21-09-2020 10:59;85;India;;
 Yes;G2-Mr. A# Mario Cassion Anand AP# Loyola ICAM College of Engineering and Technology# Chennai#;G2-Mr. A, Mario Cassion Anand;AP, Loyola ICAM College of Engineering and Technology, Chennai,;mariocassionanand.a@licet.ac.in;;;21-09-2020 11:01;21-09-2020 13:44;163;India;;
 Yes;G1-Dr. Binu K Baby HoD# Thejus Engineering College# Thrissur District# Kerela;G1-Dr. Binu K Baby;HoD, Thejus Engineering College, Thrissur District, Kerela;binu@thejusengg.com;20-09-2020 10:08;approved;21-09-2020 09:26;21-09-2020 13:37;252;India;1;

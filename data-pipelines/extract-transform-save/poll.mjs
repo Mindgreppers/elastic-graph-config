@@ -1,12 +1,14 @@
 import _ from "lodash";
 import updateDoc from 'js-object-updater';
+import config from './data_config.mjs';
+const regex = config.regex;
 
 export default (workshopCode) => {
-    
+
     const instructions = [];
     //instructions.push(loadQuizKeys());
-    for (let day = 4; day <= 5; day++) {
-        instructions.push(savePollResponses(workshopCode, day, 'morning'));    
+    for (let day = 1; day <= 5; day++) {
+        instructions.push(savePollResponses(workshopCode, day, 'morning'));
     };
 
     for (let day = 1; day <= 4; day++) { //Only four day evening reports are there
@@ -32,13 +34,14 @@ const loadQuizKeys = () => {
 const savePollResponses = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,
-        
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 5 cycles. Wait for 300 millis`, [
-            
-            'search first user where {emailId: *rawPoll.userEmail} as user.',    
-            'if *user is empty, display found empty user, *rawPoll.userEmail',
+
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 5 cycles. Wait for 500 millis`, [
+
+            'search first user where {uniqueId: *rawPoll.uniqueId} as user.',
+            //'display *rawPoll',
+            'if *user is empty, display found empty user, *rawPoll.uniqueId',
             'if *user is empty, stop here.',
-            
+
             //Handle poll response of this user.
 
             //Set polls unique id and pollType in the rawPoll object.
@@ -46,9 +49,9 @@ const savePollResponses = (workshopCode, day, session) => {
             //If not question was attempted by user, dont create the poll or proceed further.
             //Proceed only if the user attempted at least one question
             (ctx) => {
-                
+
                 const rawPoll = ctx.get('rawPoll');
-                
+
                 //Set the poll type based on the codes embedded in the questions
                 //If user did not attempt any question, pollType will be set as null
                 setPollTypeInRawPoll(rawPoll._source);
@@ -58,13 +61,13 @@ const savePollResponses = (workshopCode, day, session) => {
                 const questionColumns = getQuestionsColumns(rawPoll._source);
                 const questionTexts = questionColumns.map((qc) => rawPoll._source[qc]);
                 rawPoll.uniqueId = //Remove all non letter, non number or not ,.: characters
-                    questionTexts.join('').replace(/[^a-zA-Z']//g);
-                
+                    questionTexts.join('').replace(regex.removeNonAlphabet, '');
+
             },
 
             //If the poll was not attempted at all, pollType is not set.
             //Hence don't proceed if pollType is null.
-            `if *rawPoll.pollType is empty, stop here.`, 
+            `if *rawPoll.pollType is empty, stop here.`,
 
             //Search the poll. Create if not existing. For found
             `pollQuery is {
@@ -75,9 +78,9 @@ const savePollResponses = (workshopCode, day, session) => {
                 uniqueId: *rawPoll.uniqueId
             }`,
             `search first poll where *pollQuery as poll. Create if not exists.`,
-            
+
             //Create user-poll document to store user's attempted questions and marks
-            
+
             `userPollAttempt is {
                 _type: user-poll,
                 poll._id: *poll._id, 
@@ -86,17 +89,17 @@ const savePollResponses = (workshopCode, day, session) => {
             'index *userPollAttempt',
             //Save user's marks in previously created user-poll document
             //for all the questions attempted by him/her for this poll
-            saveUserPollMarks,
-            
-            //Now save the workshop level data for this poll, and user.
-            addMarksAttemptsToWorkshopPerformance
+            saveUserPollData,
+
+            //Now update the aggregated user-workshop level data from the performance in this poll.
+            aggregateUsersQuizPerformance
         ]
     ]
 };
 
 const setPollTypeInRawPoll = (rawPollSource) => {
     let firstQuestion = rawPollSource['_0']; //First question should have this column name
-    
+
     //If no question was attempted, we let pollType be undefined because poll type is stored in the questions, 
     //in the input data;
     if (!firstQuestion) {
@@ -121,16 +124,16 @@ const setPollTypeInRawPoll = (rawPollSource) => {
     rawPollSource.pollType = pollType;
 }
 
-const saveUserPollMarks = async (ctx) => {
+const saveUserPollData = async (ctx) => {
     let rawPollSource = ctx.get('rawPoll')._source;
-    
+
     //All questions and answer columns are of the format _N where N is number
     //A column of question is followed by a column of answer.
-    
+
     const questions = getQuestionsColumns(rawPollSource);
-    
+
     const scriptsToRun = saveUserPollQAData(rawPollSource, questions);
-    
+
     //Execute all the generated scripts and wait till all of them complete.
     await Promise.all(
         scriptsToRun.map((script) => ctx.es.dsl.execute(script, ctx))
@@ -150,11 +153,11 @@ const getQuestionsColumns = (rawPollSource) => {
 }
 
 const saveUserPollQAData = (rawPoll, questions) => {
-    return questions.map ((questionColumn) => {
+    return questions.map((questionColumn) => {
         //Get the question text, after removing the quiz/test/morning-quiz 
         //#number# from its tail-end
         let questionText = getQuestionText(rawPoll[questionColumn]);
-        questionText = questionText.replace(/[^a-zA-Z\.,:!']//g, '');
+        questionText = questionText.replace(regex.removeNonAlphabet, '');
 
         return [
             `search first question where {uniqueId: "${questionText}"} as question. Create if not exists.`,
@@ -163,11 +166,11 @@ const saveUserPollQAData = (rawPoll, questions) => {
             //Questions and marks for this poll are stored in user-poll table
             //Also add to the user's cumulative data for this workshop, from this poll
             async (ctx) => {
-                
+
                 //Ignore not attempted questions
                 const answerColumn = `_${+questionColumn.substr(1) + 1}`;
                 let answer = rawPoll[answerColumn];
-                if (!answer) { 
+                if (!answer) {
                     return;
                 }
 
@@ -187,14 +190,14 @@ const getQuestionText = (fullText) => {
 const saveQuestionMarksInUserPoll = async (ctx, answer) => {
     const pollType = ctx.get('poll')._source.pollType;
     const userPoll = ctx.get('user-poll');
-    
+
     //Increment total answers attempted by the user
     userPoll._source.numAnswers = (userPoll._source.numAnswers || 0) + 1;
 
     //Compute poll totalMarks and also question wise marks for test, quiz, morning-quiz. Ignore type poll.
     if (pollType && pollType != 'poll') {
-        
-        const marks = await getMarks(ctx, answer);    
+
+        const marks = await getMarks(ctx, answer);
         //Set total marks
         userPoll._source.totalMarks = (userPoll._source.totalMarks || 0) + marks;
         //Set question wise marks
@@ -205,7 +208,7 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
             update: {
                 push: {
                     "questionWiseMarks": {
-                        [question._id]: marks 
+                        [question._id]: marks
                     }
                 }
             }
@@ -213,41 +216,92 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
     }
 }
 
-const addMarksAttemptsToWorkshopPerformance = async (ctx) => {
+const aggregateUsersQuizPerformance = async (ctx) => {
     //Get workshop data for this user
     await ctx.es.dsl.execute([
-        
+
         `userWorkshopDataQuery is {
             user._id: *user._id, 
             workshop._id: *workshop._id
         }`,
         'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
-        (ctx) => {
-            
-            const userWorkshopData = ctx.get('userWorkshopData');
-            //Get the current aggregated data for this poll's type or initialize to empty
-            const pollType = ctx.get('poll')._source.pollType;
-            
-            let {totalMarks, numAnswers, numPollsAttempted} = userWorkshopData._source[pollType] || {
-                    totalMarks: 0, 
-                    numAnswers: 0, 
-                    numPollsAttempted: 0
-                };
-             
-            //Increment user's marks and attempts count from this poll, into workshop's pollType aggregated data
-            const userPoll = ctx.get('user-poll');
-            totalMarks += userPoll._source.totalMarks || 0;
-            numAnswers += userPoll._source.numAnswers;
-            numPollsAttempted += 1;
-            //Set in the in memory object, for later indexing in the database
-            userWorkshopData._source[pollType] = {totalMarks, numAnswers, numPollsAttempted};
-            
-            ctx.markDirtyEntity(userWorkshopData);
-        }
+        updateUserWorkshopLevelInfo
     ], ctx);
-    
+
 };
 
+const updateUserWorkshopLevelInfo = (ctx) => {
+
+    const userWorkshopData = ctx.get('userWorkshopData');
+    //Get the current aggregated data for this poll's type or initialize to empty
+    const pollInfo = ctx.get('poll')._source;
+    const day = pollInfo.day;
+    const session = pollInfo.session;
+    const pollType = pollInfo.pollType;
+
+    //Init quizPerformance object for the workshop (w), if not existing
+    let quizPerformanceInfo = userWorkshopData._source.quizPerformance;
+    if (!quizPerformanceInfo) {
+        userWorkshopData._source.quizPerformance = 
+            quizPerformanceInfo = initializeUWQuizPerformanceInfo();
+    }
+
+    //Now set data from this user-poll info into quizPerformanceInfo
+    const userPoll = ctx.get('user-poll');
+    const pollMarks = userPoll._source.totalMarks || 0;
+    const pollNumAnswers = userPoll._source.numAnswers;
+
+    //Update user's aggregated quiz performance info - workshop level, day wise and day-session wise
+    const pollTypePerformanceInfo = quizPerformanceInfo[pollType];
+    //update total aggregated info
+    incrementAggregateCounters(pollTypePerformanceInfo, pollMarks, pollNumAnswers);
+    //update particular day's aggregated info
+    incrementAggregateCounters(pollTypePerformanceInfo[`day${day}`], pollMarks, pollNumAnswers);
+    //update dayN-session aggregated info
+    incrementAggregateCounters(pollTypePerformanceInfo[`day${day}`][session], pollMarks, pollNumAnswers);
+
+    //Mark this user-workshop entity as updated, so that it can later be flushed into the DB
+    ctx.markDirtyEntity(userWorkshopData);
+};
+
+const incrementAggregateCounters = (quizPerformance, pollMarks, pollNumAnswers) => {
+    const keyData = quizPerformance.aggregated;
+    keyData.totalMarks = keyData.totalMarks + pollMarks;
+    keyData.numAnswers = keyData.numAnswers + pollNumAnswers;
+    keyData.numPollsAttempted += 1;
+};
+
+const initializeUWQuizPerformanceInfo = () => {
+    const initialData = {
+        totalMarks: 0,
+        numAnswers: 0,
+        numPollsAttempted: 0
+    };
+
+    const quizPerformanceData = {};
+    //Fill the aggregated data - overall, day wise, day-session wise
+    config.pollTypes.forEach((pt) => {
+
+        quizPerformanceData[pt] = {//Workshop level aggregation
+            aggregated: { ...initialData }
+        }
+
+        for (let i = 1; i <= config.numDays; i++) {//Day and session level aggregations
+            quizPerformanceData[pt][`day${i}`] = {
+                'aggregated': { ...initialData },
+                'morning': {
+                    'aggregated': { ...initialData }
+                },
+                'evening': {
+                    'aggregated': { ...initialData }
+                }
+            }
+        };
+    }); //End of forEach
+
+    return quizPerformanceData;
+
+}
 
 const getMarks = async (ctx, answer) => {
     if (answer.includes(';')) {
@@ -256,10 +310,10 @@ const getMarks = async (ctx, answer) => {
 
     let optionCode = answer.match(/#([^#]*)#/);
     optionCode = optionCode && optionCode[1];
-    
-    const quizKey = 
+
+    const quizKey =
         await ctx.es.dsl.execute(`search first quiz_key where {optionCode: ${optionCode}}`, ctx);
-    
-        //quizKey has marks stored as string. Will use implicit conversion to number
+
+    //quizKey has marks stored as string. Will use implicit conversion to number
     return +(quizKey[0]._source.marks);
 };

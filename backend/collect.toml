@@ -6,9 +6,9 @@
   search = 400
   bulk = 200
 [timeouts]
-  index = 100
+  index = 30
   get = 30
   bulk = 30
   mget = 30
   msearch = 30
-  search = 100
+  search = 30

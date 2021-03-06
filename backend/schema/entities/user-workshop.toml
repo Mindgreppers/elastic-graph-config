@@ -1,10 +1,4 @@
 [sessionWiseMinutes]
     type = 'Object'
-[poll]
-    type = 'Object'
-[test]
-    type = 'Object'
-[quiz]
-    type = 'Object'
-[morning-quiz]
+[quizPerformance]
     type = 'Object'

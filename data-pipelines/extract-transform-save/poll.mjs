@@ -32,10 +32,11 @@ const loadQuizKeys = () => {
 }
 //let c = 0, cerr = 0, p = 0, perr = 0;
 const savePollResponses = (workshopCode, day, session) => {
+
     return [
         `get workshop ${workshopCode}`,
 
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 300 at a time. Flush every 5 cycles. Wait for 500 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: "${workshopCode}"} as rawPoll. Get 100 at a time. Flush every 10 cycles. Wait for 300 millis`, [
 
             'search first user where {uniqueId: *rawPoll.uniqueId} as user.',
             //'display *rawPoll',
@@ -81,18 +82,20 @@ const savePollResponses = (workshopCode, day, session) => {
 
             //Create user-poll document to store user's attempted questions and marks
 
-            `userPollAttempt is {
+            `user-poll is {
                 _type: user-poll,
                 poll._id: *poll._id, 
                 user._id: *user._id
             }`,
-            'index *userPollAttempt',
+            'index *user-poll',
             //Save user's marks in previously created user-poll document
             //for all the questions attempted by him/her for this poll
             saveUserPollData,
 
             //Now update the aggregated user-workshop level data from the performance in this poll.
-            aggregateUsersQuizPerformance
+            async (ctx) => {
+                return await aggregateUsersQuizPerformance(ctx, workshopCode);
+            }
         ]
     ]
 };
@@ -216,13 +219,13 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
     }
 }
 
-const aggregateUsersQuizPerformance = async (ctx) => {
+const aggregateUsersQuizPerformance = async (ctx, workshopCode) => {
     //Get workshop data for this user
     await ctx.es.dsl.execute([
 
         `userWorkshopDataQuery is {
             user._id: *user._id, 
-            workshop._id: *workshop._id
+            workshop._id: ${workshopCode}
         }`,
         'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
         updateUserWorkshopLevelInfo
@@ -238,75 +241,79 @@ const updateUserWorkshopLevelInfo = (ctx) => {
     const day = pollInfo.day;
     const session = pollInfo.session;
     const pollType = pollInfo.pollType;
+    if (!pollType) {
+        return;
+    }
 
     //Init quizPerformance object for the workshop (w), if not existing
     let quizPerformanceInfo = userWorkshopData._source.quizPerformance;
     if (!quizPerformanceInfo) {
-        userWorkshopData._source.quizPerformance = 
-            quizPerformanceInfo = initializeUWQuizPerformanceInfo();
+        userWorkshopData._source.quizPerformance =
+            quizPerformanceInfo = {//Workshop level aggregation
+                aggregated: {
+                    totalMarks: 0,
+                    numAnswers: 0,
+                    numPollsAttempted: 0
+                }
+            };
     }
 
     //Now set data from this user-poll info into quizPerformanceInfo
     const userPoll = ctx.get('user-poll');
     const pollMarks = userPoll._source.totalMarks || 0;
-    const pollNumAnswers = userPoll._source.numAnswers;
-
+    const pollNumAnswers = userPoll._source.numAnswers || 0;
+    
     //Update user's aggregated quiz performance info - workshop level, day wise and day-session wise
-    const pollTypePerformanceInfo = quizPerformanceInfo[pollType];
+    let pollTypePerformanceInfo = quizPerformanceInfo[pollType];
+    if (!pollTypePerformanceInfo) {
+        pollTypePerformanceInfo = quizPerformanceInfo[pollType] = {
+            aggregated: {
+                totalMarks: 0,
+                numAnswers: 0,
+                numPollsAttempted: 0
+            }
+        };
+    };
+    console.log(pollType, session, pollNumAnswers, pollMarks);
     //update total aggregated info
-    incrementAggregateCounters(pollTypePerformanceInfo, pollMarks, pollNumAnswers);
+    incrementAggregateCounters(pollTypePerformanceInfo, [], pollMarks, pollNumAnswers);
     //update particular day's aggregated info
-    incrementAggregateCounters(pollTypePerformanceInfo[`day${day}`], pollMarks, pollNumAnswers);
+    incrementAggregateCounters(pollTypePerformanceInfo, [`day${day}`], pollMarks, pollNumAnswers);
     //update dayN-session aggregated info
-    incrementAggregateCounters(pollTypePerformanceInfo[`day${day}`][session], pollMarks, pollNumAnswers);
+    incrementAggregateCounters(pollTypePerformanceInfo, [`day${day}`, session], pollMarks, pollNumAnswers);
 
     //Mark this user-workshop entity as updated, so that it can later be flushed into the DB
     ctx.markDirtyEntity(userWorkshopData);
 };
 
-const incrementAggregateCounters = (quizPerformance, pollMarks, pollNumAnswers) => {
-    const keyData = quizPerformance.aggregated;
-    keyData.totalMarks = keyData.totalMarks + pollMarks;
-    keyData.numAnswers = keyData.numAnswers + pollNumAnswers;
-    keyData.numPollsAttempted += 1;
-};
-
-const initializeUWQuizPerformanceInfo = () => {
-    const initialData = {
-        totalMarks: 0,
-        numAnswers: 0,
-        numPollsAttempted: 0
+const incrementAggregateCounters = (quizPerformance, path, pollMarks, pollNumAnswers) => {
+    let objectToUpdate = quizPerformance.aggregated;
+    for (let edge of path) {
+        if (!quizPerformance[edge]) {
+            quizPerformance[edge] = {
+                aggregated: {
+                    totalMarks: 0,
+                    numAnswers: 0,
+                    numPollsAttempted: 0
+                }
+            };
+        };
+        objectToUpdate = quizPerformance[edge].aggregated;
+        quizPerformance = quizPerformance[edge];
     };
 
-    const quizPerformanceData = {};
-    //Fill the aggregated data - overall, day wise, day-session wise
-    config.pollTypes.forEach((pt) => {
+    
 
-        quizPerformanceData[pt] = {//Workshop level aggregation
-            aggregated: { ...initialData }
-        }
+    objectToUpdate.totalMarks = objectToUpdate.totalMarks + pollMarks;
+    objectToUpdate.numAnswers = objectToUpdate.numAnswers + pollNumAnswers;
+    objectToUpdate.numPollsAttempted += 1;
+};
 
-        for (let i = 1; i <= config.numDays; i++) {//Day and session level aggregations
-            quizPerformanceData[pt][`day${i}`] = {
-                'aggregated': { ...initialData },
-                'morning': {
-                    'aggregated': { ...initialData }
-                },
-                'evening': {
-                    'aggregated': { ...initialData }
-                }
-            }
-        };
-    }); //End of forEach
-
-    return quizPerformanceData;
-
-}
 
 const getMarks = async (ctx, answer) => {
     if (answer.includes(';')) {
         answer = answer.split(';')[0];
-    }
+    };
 
     let optionCode = answer.match(/#([^#]*)#/);
     optionCode = optionCode && optionCode[1];

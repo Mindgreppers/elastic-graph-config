@@ -32,8 +32,8 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
-        `get workshop ${workshopCode}`,
-        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 200 at a time. Flush every 5 cycles. Wait for 500 millis`, [
+        `get workshop ${workshopCode}`,//, uniqueId: sivapriyaravi97gmailcom
+        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 200 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
             'if *raw_attendance.uniqueId is empty, display *raw_attendance.',
             'if *raw_attendance.uniqueId is empty, stop here.',
             'get user *raw_attendance.uniqueId.',
@@ -55,35 +55,45 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
                 name: *raw_attendance.userName,
                 registeredAICTE: false
             }`,
-            //'display *foundNewUser.',
-            'if *foundNewUser is true, index *newUser',
-            'if *foundNewUser is true, link *newUser with *workshop as workshops',
+            'if *foundNewUser is true, display foundNewUser.',
+            'if *foundNewUser is true, index *newUser.',
+            //'if *foundNewUser is true, link *newUser with *workshop as workshops',
             //Save total attendance time day and session wise, in user-workshop
-            'search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: *workshop._id} as userWorkshopData. Create if not exists.',
+            `search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: ${workshopCode}} as userWorkshopData. Create if not exists.`,
             (ctx) => {
+                // const res = await ctx.es.dsl.execute("search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: *workshop._id} as userWorkshopData.", ctx)
+                // console.log(JSON.stringify(res[0]), 'ccccccccccccccc')
+                // if (ctx.get('user')._source.uniqueId === 'sivapriyaravi97gmailcom') {
+                //     console.log('')
+                // }
                 const userWorkshop = ctx.get('userWorkshopData');
                 
                 const userWorkshopData = userWorkshop._source;
-                //console.log(userWorkshopData);
+                
                 userWorkshopData.sessionWiseMinutes = userWorkshopData.sessionWiseMinutes || {}; 
                 userWorkshopData.sessionWiseMinutes[day] = userWorkshopData.sessionWiseMinutes[day] || {
                         'morning': 0, 
                         'evening': 0
                     };
-                
+             
                 const attendance = ctx.get('raw_attendance')._source;
-                
-                userWorkshopData.sessionWiseMinutes[day][session] 
+                console.log(day, session, attendance.timeInSession);
+                userWorkshopData.sessionWiseMinutes[day][session]
                     += +(attendance.timeInSession || 0);
                 //console.log(attendance.timeInSession)
                 //Mark it dirty for saving to DB during next ctx.flush() call
                 ctx.markDirtyEntity(userWorkshop);
+                // const res2 = await ctx.es.dsl.execute("search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: *workshop._id} as userWorkshopData.", ctx);
+                // console.log(JSON.stringify(res2[0]), 'ddddddddddddddddddddd');
+                // const res3 = await ctx.es.dsl.execute("search first user-workshop where {user._id: sivapriyaravi97gmailcom, workshop._id: sample1} as userWorkshopData.");
+                // console.log(JSON.stringify(res3[0].get('userWorkshopData')), 'eeeeeeeeeeeeeeeeeeeeeee')
+                return ctx;
             }
         ]
     ];
 };
 
-export const saveUsersStatesCitiesFromAICTE = [
+export const saveUsersStatesCitiesFromAICTE = (workshopCode) => [
     'iterate over aicte_registrations as raw_user. Get 200 at a time. Flush every 5 cycles. Wait for 500 millis.', [
         'search first state where {name: *raw_user.instituteState}. Create if not exists.',
         'search first city where {name: *raw_user.instituteCity, state._id: *state._id}. Create if not exists.',
@@ -99,6 +109,9 @@ export const saveUsersStatesCitiesFromAICTE = [
             registeredAICTE: true
         }`,
         'index *user',
+        // `user-workshop is {user._id: *raw_user.uniqueId, workshop._id: ${workshopCode}}`,
+        // 'index *user-workshop'
+
     ]
 ];
 

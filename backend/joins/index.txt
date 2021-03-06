@@ -17,6 +17,7 @@
   university{name}
 [user]
   state{name}
+  state.country{name}
   college{name}
   designation{name}
   workshops{name}

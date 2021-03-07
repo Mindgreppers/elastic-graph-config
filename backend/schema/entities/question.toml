@@ -3,6 +3,11 @@ sort = true
 type = 'String'
 autoSuggestion = true
 
+[uniqueId]
+type = 'String'
+sort = true
+multiLingual = false
+
 [option1]
 type = 'String'
 multiLingual = false

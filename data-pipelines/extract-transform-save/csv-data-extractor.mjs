@@ -59,20 +59,16 @@ export default async (egClient, workshopDataFolderPath, {aicte, googleForms, zoo
  */
 const extractCsvFolder = async (egClient, workshopCode, csvFolderPath, dataSourceConfig) => {
     const fileNames = fs.readdirSync(csvFolderPath);
-    const indexingPromise = fileNames.reduce(async (promiseSoFar, fileName) => {
+    const promises = fileNames.map((fileName) => {
         const fullFilePath = `${csvFolderPath}/${fileName}`;
         //Extract indexName from {{indexName}}.csv
         const indexName = fileName.split('.')[0];
-        // if (indexName !== 'day_2_evening_poll_report') {
-        //     return promiseSoFar;
+        // if (indexName !== 'self_evaluation_post_workshop_survey_and_reedback_responses'){
+        //     return;
         // }
-        return promiseSoFar
-        .then(async () => {
-            await sleep(2000);
-            return egClient.indexCsv(fullFilePath, indexName, {workshopCode}, dataSourceConfig);
-        })
-    }, Promise.resolve());
-    return indexingPromise;
+        return egClient.indexCsv(fullFilePath, indexName, {workshopCode}, dataSourceConfig);
+    })
+    return Promise.all(promises);
 };  
 
 function sleep(ms) {

@@ -39,11 +39,11 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
         `get workshop ${workshopCode}`,//, uniqueId: sivapriyaravi97gmailcom
-        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}, uniqueId: sivapriyaravi97gmailcom} as raw_attendance. Get 100 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
+        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 100 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
             'if *raw_attendance.uniqueId is empty, display *raw_attendance.',
             'if *raw_attendance.uniqueId is empty, stop here.',
             'get user *raw_attendance.uniqueId.',
-            //'display *user',
+            
             //Next: If the user was newly created in previous statement, 
             //it means he was not in the AICTE registerations data. Hence (s)he must not be having a firstName. 
             //In this case we will save the user with additional data as captured from this attendance record
@@ -63,15 +63,9 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
             }`,
             'if *foundNewUser is true, display foundNewUser.',
             'if *foundNewUser is true, index *newUser.',
-            //'if *foundNewUser is true, link *newUser with *workshop as workshops',
             //Save total attendance time day and session wise, in user-workshop
             `search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: ${workshopCode}} as userWorkshopData. Create if not exists.`,
             (ctx) => {
-                // const res = await ctx.es.dsl.execute("search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: *workshop._id} as userWorkshopData.", ctx)
-                // console.log(JSON.stringify(res[0]), 'ccccccccccccccc')
-                // if (ctx.get('user')._source.uniqueId === 'sivapriyaravi97gmailcom') {
-                //     console.log('')
-                // }
                 const userWorkshop = ctx.get('userWorkshopData');
 
                 const userWorkshopData = userWorkshop._source;
@@ -83,17 +77,10 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
                 };
 
                 const attendance = ctx.get('raw_attendance')._source;
-                //console.log(`day${day}`, session, attendance.timeInSession);
                 userWorkshopData.connectTime[`day${day}`][session]
                     += +(attendance.timeInSession || 0);
-                //console.log(attendance.timeInSession)
                 //Mark it dirty for saving to DB during next ctx.flush() call
                 ctx.markDirtyEntity(userWorkshop);
-                console.log(JSON.stringify(userWorkshopData.connectTime))
-                // const res2 = await ctx.es.dsl.execute("search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: *workshop._id} as userWorkshopData.", ctx);
-                // console.log(JSON.stringify(res2[0]), 'ddddddddddddddddddddd');
-                // const res3 = await ctx.es.dsl.execute("search first user-workshop where {user._id: sivapriyaravi97gmailcom, workshop._id: sample1} as userWorkshopData.");
-                // console.log(JSON.stringify(res3[0].get('userWorkshopData')), 'eeeeeeeeeeeeeeeeeeeeeee')
                 return ctx;
             }
         ]
@@ -131,7 +118,7 @@ export const saveDifferentGoogleForms = (workshopCode) => {
 
 const googleFormImportInstructions = (workshopCode, formType) => {
     return [
-        `iterate over ${formType} where {workshopCode: ${workshopCode}, uniqueId: sivapriyaravi97gmailcom} as formEntry. Get 450 at a time. Flush every 10 cycles. Wait for 500 millis.`, [
+        `iterate over ${formType} where {workshopCode: ${workshopCode}} as formEntry. Get 450 at a time. Flush every 10 cycles. Wait for 500 millis.`, [
             `search first user-workshop where {user._id: *formEntry.uniqueId, workshop._id: ${workshopCode}} as user-workshop.`,
             `if *user-workshop is empty, display user workshop not found, *formEntry.uniqueId, ${workshopCode}`,
             'if *user-workshop is empty, stop here',

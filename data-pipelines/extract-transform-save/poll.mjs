@@ -35,8 +35,8 @@ const savePollResponses = (workshopCode, day, session) => {
 
     return [
         `get workshop ${workshopCode}`,
-
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}, uniqueId: sivapriyaravi97gmailcom} as rawPoll. Get 100 at a time. Flush every 10 cycles. Wait for 500 millis`, [
+//, uniqueId: sivapriyaravi97gmailcom
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 100 at a time. Flush every 10 cycles. Wait for 1000 millis`, [
 
             'search first user where {uniqueId: *rawPoll.uniqueId} as user.',
             //'display *rawPoll',
@@ -236,9 +236,9 @@ const aggregateUsersQuizPerformance = async (ctx, workshopCode) => {
 const updateUserWorkshopLevelInfo = (ctx) => {
     
     const userWorkshop = ctx.get('userWorkshopData');
-    if (userWorkshop._source.quizPerformance && userWorkshop._source.quizPerformance.test) {
-        console.log(JSON.stringify(userWorkshop._source.quizPerformance.test));
-    }
+    // if (userWorkshop._source.quizPerformance && userWorkshop._source.quizPerformance.test) {
+    //     console.log(JSON.stringify(userWorkshop._source.quizPerformance.test));
+    // }
     // && userWorkshop._source.quizPerformance.test.aggregated))
 
     //Get the current aggregated data for this poll's type or initialize to empty

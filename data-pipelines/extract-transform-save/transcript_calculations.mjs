@@ -1,18 +1,19 @@
 import Debug from 'debug';
-import config from '../data_config.mjs';
+import config from './data_config.mjs';
 const debug = new Debug('transcript_calculation');
 
 const workshopDays = ['day1', 'day2', 'day3', 'day4', 'day5'];
-const postWorkshopSurvey = config.sources.googleForms.postWorkshopSurvey;
+const POST_WORKSHOP_SURVEY = config.sources.googleForms.postWorkshopSurvey;
 const PRE_WORKSHOP_SURVEY = config.sources.googleForms.preWorkshopSurvey;
-const surveyForms = [PRE_WORKSHOP_SURVEY, postWorkshopSurvey];
+const surveyForms = [PRE_WORKSHOP_SURVEY, POST_WORKSHOP_SURVEY];
 const formTypes = [...surveyForms, ...config.sources.googleForms.assignmentForms];
 
 export const finalUserWorkshopCalculations = (workshopCode) => {
     const script = [
         `get workshop ${workshopCode} as workshop.`,
-        `iterate over user-workshops where {workshop._id: ${workshopCode}, user._id: sivapriyaravi97gmailcom} as user-workshop. Get 200 at a time. Flush every 3 cycles. Wait for 500 millis.`, [
-            
+        `iterate over user-workshops where {workshop._id: ${workshopCode}} as user-workshop. Get 200 at a time. Flush every 3 cycles. Wait for 500 millis.`, [
+            //'if *user-workshop.connectTime is empty, stop here.',
+            'if *user-workshop.quizPerformance is empty, stop here.',
             calculateQuizzesScorePercentage,
             calculateTestScoresPercentage,
             calculatePollAttemptPercentage,
@@ -41,11 +42,11 @@ const calculateFinalRecommendation = (ctx) => {
         config.parameters["% Average connnect Time for Certificate Recommendetion"];
     
     //Check second criterion of Transcripts: AG + AH + AI >= Parameters: C21
-    const AG_totalAssignmentsSubmittedPoints = Object.keys(userWorkshop.assignments).length;
-    const AH_preWorkshopSurveySubmittedPoints = userWorkshop.surveySubmissions[PRE_WORKSHOP_SURVEY];
-    const AI_preWorkshopSurveySubmittedPoints = userWorkshop.surveySubmissions[PRE_WORKSHOP_SURVEY];
+    const AG_totalAssignmentsSubmittedPoints = Object.keys(userWorkshop.assignments || {}).length;
+    const AH_preWorkshopSurveySubmittedPoints = get(userWorkshop, ['surveySubmissions', PRE_WORKSHOP_SURVEY]);
+    const AI_postWorkshopSurveySubmittedPoints = get(userWorkshop, ['surveySubmissions', POST_WORKSHOP_SURVEY]);
     
-    const totalPoints = AG_totalAssignmentsSubmittedPoints + AH_preWorkshopSurveySubmittedPoints + AI_preWorkshopSurveySubmittedPoints;
+    const totalPoints = AG_totalAssignmentsSubmittedPoints + AH_preWorkshopSurveySubmittedPoints + AI_postWorkshopSurveySubmittedPoints;
     
     const parameterMinTotalPoints = config.parameters['Minimum count of Pre, Post etc for Certificate'];
 
@@ -91,7 +92,10 @@ const calculateFinalAttendance = (ctx) => {
     calculateComputedConnectTime(userWorkshop);
 
     //Now set final connect time percentage value dependening on whether user passes the following four cirteria
-    
+    if (!userWorkshop.quizPerformance) {
+        debug(`found empty quizPerformance for user: ${userWorkshop.user._id}, workshop: ${userWorkshop.workshop._id}`)
+        return;
+    }  
     //Retrieve all four criteria
     const {isPassDailyPollAttemptCriteria, isPassAveragePollAttemptCriteria} 
         = userWorkshop.quizPerformance.aggregated;
@@ -117,6 +121,9 @@ const calculateComputedConnectTime = (userWorkshop) => {
     let isPassDailyMinimumPollAttemptCriteria = true;
     const dailyMinConnectTime = config.parameters["% daily Connect time for Certificate Recommendetion"];
     for (let day of Object.keys(userConnectTime)) {
+        if (!day.includes('day')) {
+            continue;
+        }
         const maxMorningTime = config.parameters.maxSessionDuration[day]["M Min"];
         const maxEveningTime = config.parameters.maxSessionDuration[day]["E Min"];
         const morningTime = Math.min(userConnectTime[day].morning || 0, maxMorningTime);
@@ -161,7 +168,7 @@ const calculateTestScoresPercentage = (ctx) => {
         = +(100 * totalScore / totalQuestions).toFixed(2);
 
     //Also set total test attempts
-    quizPerformance.aggregated.totalTestAttempted = quizPerformance.test.aggregated.numPollsAttempted;
+    quizPerformance.aggregated.totalTestAttempted = get(quizPerformance, ['test', 'aggregated', 'numPollsAttempted']) || 0;
 }
 
 const calculateQuizzesScorePercentage = (ctx) => {
@@ -177,7 +184,7 @@ const calculateQuizzesScorePercentage = (ctx) => {
             totalScore += get(quizPerformance, [pollType, day, 'aggregated', 'totalMarks']) || 0;
         }
         //Total attempts of quizzes
-        numQuizzesAttempted += quizPerformance[pollType].aggregated.numPollsAttempted;
+        numQuizzesAttempted += get(quizPerformance, [pollType, 'aggregated', 'numPollsAttempted']) || 0;
     }
     quizPerformance.aggregated.totalQuizAttempted = numQuizzesAttempted;
     quizPerformance.aggregated.totalQuizScore = totalScore;
@@ -198,7 +205,7 @@ const calculatePollAttemptPercentage = (ctx) => {
         return;
     }
     const dailyPercentages = [];
-    const isPassDailyPollAttemptCriteria = true;
+    let isPassDailyPollAttemptCriteria = true;
     //First calculate day wise poll percentage and if is pass daily poll attempt criteria
     for (let day of workshopDays) {
         
@@ -228,10 +235,10 @@ const calculatePollAttemptPercentage = (ctx) => {
     
     //Now calculate average attendance percentage and pass criteria
     const sumOfPercentages = dailyPercentages.reduce((a,b) => a + b, 0);
-    const averagePercentageConnectTime = sumOfPercentages / dailyPercentages.length;
-    quizPerformance.aggregated.averagePercentageConnectTime = averagePercentageConnectTime;
+    const averageOfDailyPollAttemptPercentages = sumOfPercentages / dailyPercentages.length;
+    quizPerformance.aggregated.averageOfDailyPollAttemptPercentages = averageOfDailyPollAttemptPercentages;
     quizPerformance.aggregated.isPassAveragePollAttemptCriteria 
-        = averagePercentageConnectTime >= config.parameters["Average Minimum Attempted Poll % for Attended % considration"];
+        = averageOfDailyPollAttemptPercentages >= config.parameters["Average Minimum Attempted Poll % for Attended % considration"];
      
 };
 

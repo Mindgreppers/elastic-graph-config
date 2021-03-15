@@ -38,8 +38,8 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
-        `get workshop ${workshopCode}`,//, uniqueId: sivapriyaravi97gmailcom
-        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 100 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
+        `get workshop ${workshopCode}`,
+        `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 1000 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
             'if *raw_attendance.uniqueId is empty, display *raw_attendance.',
             'if *raw_attendance.uniqueId is empty, stop here.',
             'get user *raw_attendance.uniqueId.',
@@ -47,9 +47,6 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
             //Next: If the user was newly created in previous statement, 
             //it means he was not in the AICTE registerations data. Hence (s)he must not be having a firstName. 
             //In this case we will save the user with additional data as captured from this attendance record
-            //'if *user.firstName is not empty, display *user.firstName',
-
-
             'if *user is empty, foundNewUser is true.',
             `if *foundNewUser is true, newUser is {
                 _id: *raw_attendance.uniqueId,
@@ -88,7 +85,7 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
 };
 
 export const saveUsersStatesCitiesFromAICTE = (workshopCode) => [
-    'iterate over aicte_registrations as raw_user. Get 200 at a time. Flush every 5 cycles. Wait for 500 millis.', [
+    'iterate over aicte_registrations as raw_user. Get 400 at a time. Flush every 5 cycles. Wait for 100 millis.', [
         'search first state where {name: *raw_user.instituteState}. Create if not exists.',
         'search first city where {name: *raw_user.instituteCity, state._id: *state._id}. Create if not exists.',
         `user is {

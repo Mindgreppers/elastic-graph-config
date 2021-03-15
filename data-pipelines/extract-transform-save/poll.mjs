@@ -35,10 +35,10 @@ const savePollResponses = (workshopCode, day, session) => {
 
     return [
         `get workshop ${workshopCode}`,
-//, uniqueId: sivapriyaravi97gmailcom
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 100 at a time. Flush every 10 cycles. Wait for 1000 millis`, [
+//
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 400 at a time. Flush every 2 cycles. Wait for 100 millis`, [
 
-            'search first user where {uniqueId: *rawPoll.uniqueId} as user.',
+            'get user *rawPoll.uniqueId. Join from read',
             //'display *rawPoll',
             'if *user is empty, display found empty user, *rawPoll.uniqueId',
             'if *user is empty, stop here.',
@@ -93,9 +93,12 @@ const savePollResponses = (workshopCode, day, session) => {
             saveUserPollData,
 
             //Now update the aggregated user-workshop level data from the performance in this poll.
-            async (ctx) => {
-                return await aggregateUsersQuizPerformance(ctx, workshopCode);
-            }
+            `userWorkshopDataQuery is {
+                user._id: *user._id, 
+                workshop._id: ${workshopCode}
+            }`,
+            'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+            updateUserWorkshopLevelInfo
         ]
     ]
 };
@@ -220,16 +223,7 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
 }
 
 const aggregateUsersQuizPerformance = async (ctx, workshopCode) => {
-    //Get workshop data for this user
-    await ctx.es.dsl.execute([
 
-        `userWorkshopDataQuery is {
-            user._id: *user._id, 
-            workshop._id: ${workshopCode}
-        }`,
-        'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
-        updateUserWorkshopLevelInfo
-    ], ctx);
 
 };
 
@@ -263,6 +257,11 @@ const updateUserWorkshopLevelInfo = (ctx) => {
     
     //update total aggregated info for the poll type
     incrementAggregateCounters(quizPerformanceInfo, [pollType], pollMarks, pollNumAnswers);
+    if (pollType !== 'poll') {
+        quizPerformanceInfo[pollType].aggregated.pollWiseMarks = quizPerformanceInfo[pollType].aggregated.pollWiseMarks || [];
+        quizPerformanceInfo[pollType].aggregated.pollWiseMarks.push(pollMarks);
+    }
+    
     //update particular day's aggregated info for the poll type
     incrementAggregateCounters(quizPerformanceInfo, [pollType, `day${day}`], pollMarks, pollNumAnswers);
     //update dayN-session aggregated info for the poll type

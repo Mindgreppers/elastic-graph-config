@@ -17,7 +17,7 @@ $ git clone https://github.com/Mindgreppers/eg-server.git
 $ git clone https://github.com/Mindgreppers/eg-frontend.git
 $ git clone https://github.com/Mindgreppers/elastic-graph-config.git
 $ git clone https://github.com/Mindgreppers/elasticgraph.git
-$ git clone https://github.com/Mindgreppers/eg-admin.git
+$ =
 ```
 
 Now navigate to `eg-server` and `eg-frontend` folder and run `yarn install` like below.
@@ -49,7 +49,7 @@ cp ../elastic-graph-config/backendConfig.json ./
 cp ../elastic-graph-config/frontent/config.json configs/
 ```
 
-`eg-server/package.json` 
+`eg-server/package.json`
 Change the start script. Replace with following string.
 
 ```json
@@ -60,27 +60,27 @@ Change the start script. Replace with following string.
 
 Create a soft link of `elasticgraph` in `node_modules/elasticgraph` .
 
-*Note*: Replace `elasticgraph` folder path with your `elasticgraph` folder path.
+_Note_: Replace `elasticgraph` folder path with your `elasticgraph` folder path.
 
 ```bash
 $ cd eg-server/
-$ ln -s /Users/mountainfirefly/work/nodejs/elasticgraph node_modules
+$ ln -s `path to elastic graph directory`/work/nodejs/elasticgraph node_modules
 ```
-
-**Install Redis**
-* eg-server requires this for access-token management of logged in users.
-* Make sure that it is up and running
 
 **Create index auth_users in Elasticsearch**
 Use postman or another tool to call this url as PUT request
+
 ```
 PUT localhost:9200/auth_users
 ```
 
 **Setup SMTP server for sending emails**
-* Signup on MailTrap.io and go to MyInbox. 
-* There select nodejs as dev environment.
-* You will see similar code there.
+**Note:This can be skipped bypass for local setup given below**
+
+- Signup on MailTrap.io and go to MyInbox.
+- There select nodejs as dev environment.
+- You will see similar code there.
+
 ```
 mailerConfig: {
     host: 'smtp.mailtrap.io',
@@ -91,13 +91,26 @@ mailerConfig: {
     }
   },
 ```
-* Paste that code in eg-server/config.js
-* Also change the following two lines in the file to point to the server url.
+
+- Paste that code in eg-server/config.js
+- Also change the following two lines in the file to point to the server url.
+
 ```
  clientUrl: 'localhost:3000',
  serverUrl: 'localhost:4000'
 
 ```
+
+**Bypassing email setup for email confirmation**
+
+- Run eg-frontend projects as described
+- Open eg-frontend on browser
+- click on the signup to fill and submit form
+- you will see a conformation msg that your account is created and confirmation email has to be send to your inbox but you will not get this email because you have not set up the SMTP-server yet.
+
+* Instead of confirming the user through an email link we will confirm it by updating its document by using elastic search.
+* In postman or using curl open the url localhost:9200/auth_users/\_doc/search, it will show you the newley created user witha a property account confirmed true or false ,you need to change this property and save it back along with rest of document body by exexcuting a post request on this url localhost:9200/auth_users/\_doc/{user_id}/
+* Now you can use the same account to eg-frontend and eg-admin
 
 ### Run
 
@@ -109,6 +122,7 @@ $ yarn start
 ```
 
 **eg-frontend :—**
+
 ```bash
 $ cd eg-frontend
 $ git checkout schema-generator
@@ -124,35 +138,40 @@ $ yarn start
 ```
 
 **Creating new admin user**
-* Open localhost:3000 (Schema generator) in browser and create a new user by signing up. 
-* Confirm the email by clicking the link you get in your MailTrap inbox.
-* This user will be able to access admin-ui through localhost:3030 and also login to schema generator on localhost:3000
+
+- Open localhost:3000 (Schema generator) in browser and create a new user by signing up.
+- Confirm the email by clicking the link you get in your MailTrap inbox.
+- This user will be able to access admin-ui through localhost:3030 and also login to schema generator on localhost:3000
 
 **Login to admin UI**
-* Open localhost:3030 and enter your email and password to login
+
+- Open localhost:3030 and enter your email and password to login
 
 **Login to schema generator UI**
-* Open localhost:3000 and enter your email and password to login
-* Once you see home page after successful login, open localhost:3000/settings
+
+- Open localhost:3000 and enter your email and password to login
+- Once you see home page after successful login, open localhost:3000/settings
 
 **Step to Create New Entity**
-* Go To elastic-graph-config/backend/schema/entities - add entity here.
-* Change in elastic-graph-config/backend/schema/relationships.txt if required
-* Change in elastic-graph-config/backend/schema/aggregation.toml if required
-* Add joins statements in elastic-graph-config/backendjoins/index.txt
-* Add joins statements in elastic-graph-config/backendjoins/read.txt
-* Add joins statements in elastic-graph-config/backendjoins/search.txt
-* Now Go To elastic-graph-config/frontend/schema/entities - add entity here with specified format
-* Go To  elastic-graph-config/frontend/web/read - add entity here with specified format 
-* Go To  elastic-graph-config/frontend/web/search - add entity here with specified format 
 
-**Step to Refresh Schema
+- Go To elastic-graph-config/backend/schema/entities - add entity here.
+- Change in elastic-graph-config/backend/schema/relationships.txt if required
+- Change in elastic-graph-config/backend/schema/aggregation.toml if required
+- Add joins statements in elastic-graph-config/backendjoins/index.txt
+- Add joins statements in elastic-graph-config/backendjoins/read.txt
+- Add joins statements in elastic-graph-config/backendjoins/search.txt
+- Now Go To elastic-graph-config/frontend/schema/entities - add entity here with specified format
+- Go To elastic-graph-config/frontend/web/read - add entity here with specified format
+- Go To elastic-graph-config/frontend/web/search - add entity here with specified format
 
-* Step - 1 
+\*\*Step to Refresh Schema
+
+- Step - 1
+
 ```bash
 Open Bash on elasticgraph
 
-Run Command - DEBUD=* node lib/mappingGenerator/esMappingGenerator.js ../elastic-graph-config/backend recreate -- For Re-Creating 
+Run Command - DEBUD=* node lib/mappingGenerator/esMappingGenerator.js ../elastic-graph-config/backend recreate -- For Re-Creating
 node lib/mappingGenerator/reIndexer.js ../elastic-graph-config/backend reindex all -- For Re-Indexer
 
 if to add some newly created Entity then run below command
@@ -167,9 +186,10 @@ Then execute - $ yarn start
 Open Bash on eg-server
 Execute - $ yarn start
 
-Below Command are used for running Serach operation manually 
+Below Command are used for running Serach operation manually
 $ DEBUG=* node lib/deep/search ../elastic-graph-config/backend
 
 
 
 
+```

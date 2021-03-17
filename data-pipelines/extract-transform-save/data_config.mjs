@@ -6,8 +6,10 @@ export default {
             },
         },
         googleForms: {
-            includedColumns: ['timestamp', 'emailAddress', 'confirmEmailAddress', 'selectWorkshop', 'salutation', 'name'],
-            formTypes: ['pre_workshop_survey_responses_v2', 'self_evaluation_post_workshop_survey_and_reedback_responses', 'workshop_assignment_day_1_responses', 'workshop_assignment_day_2_responses', 'workshop_assignment_day_3_responses', 'workshop_assignment_day_4_responses']
+            //includedColumns: ['timestamp', 'emailAddress', 'confirmEmailAddress', 'selectWorkshop', 'salutation', 'name'],
+            assignmentForms: ['workshop_assignment_day_1_responses', 'workshop_assignment_day_2_responses', 'workshop_assignment_day_3_responses', 'workshop_assignment_day_4_responses'],
+            postWorkshopSurvey: 'self_evaluation_post_workshop_survey_and_reedback_responses',
+            preWorkshopSurvey: 'pre_workshop_survey_responses_v2',
         },
         zoom: { //Leave it empty if to be empty, but keep this key.
             numericalColumns: ['timeInSession']
@@ -48,7 +50,7 @@ export default {
                 "E Polls": 0
             }
         },
-        "sessionDurationOfficial": {
+        "maxSessionDuration": {
             "day1": {
                 "Tot Min": 285,
                 "M Min": 225,
@@ -81,7 +83,9 @@ export default {
         "Total Quiz Held": 17,
         "Minimum Quiz Score for certificate": 30,
         "Minimum count of Pre, Post etc for Certificate": 3,
-        "Minimum Test Score for Certificate Recommendetion": 60
+        "Minimum Test Score for Certificate Recommendetion": 60,
+        "Daily Minimum Attempted Poll %  for Attended % Consideration": 25,
+        "Average Minimum Attempted Poll % for Attended % considration": 40
     }
 
 }

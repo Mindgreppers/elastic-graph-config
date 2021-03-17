@@ -22,7 +22,7 @@
   designation{name}
   workshops{name}
 [user-poll]
-  poll{pollType}
+  poll{pollType,day,session}
   poll.workshop{_id}
 [poll]
   questions{uniqueId}

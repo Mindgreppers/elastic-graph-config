@@ -5,6 +5,7 @@ import _ from 'lodash';
 
 import csvDataExtractor from './csv-data-extractor.mjs';
 import importConfig from './data_config.mjs';
+import {setQuestionCountsInWorkshop, finalUserWorkshopCalculations} from './transcript_calculations.mjs';
 
 const debug = new Debug('ETS:index');
 
@@ -33,12 +34,15 @@ if (argv.extractRawData) {
 if (argv.transformAndSave) {
     debug('Starting transformation of raw data and save in our schema');
     await es.runScripts([
-        saveWorkshop(argv.workshopId),
-        //saveUsersStatesCitiesFromAICTE,
+      //saveWorkshop(argv.workshopId),
+      //saveUsersStatesCitiesFromAICTE ('sample1'),
         //...saveWorkshopAttendancesAlongWithNonRegisteredUsers(argv.workshopId),
-        //...saveDifferentGoogleForms(),
-        ...savePollData(argv.workshopId)
-    ]);
+        
+        //...savePollData(argv.workshopId),
+      //setQuestionCountsInWorkshop(argv.workshopId),
+        //...saveDifferentGoogleForms(argv.workshopId),
+       finalUserWorkshopCalculations(argv.workshopId)
+    ], 1000);
     debug('Saved transformed data. Please check database now, for data sanctity.');
 };
 console.timeEnd('ETL Time')

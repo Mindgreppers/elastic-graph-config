@@ -1,4 +1,8 @@
-[sessionWiseMinutes]
+[connectTime]
     type = 'Object'
 [quizPerformance]
+    type = 'Object'
+[assignments]
+    type = 'Object'
+[surveySubmissions]
     type = 'Object'

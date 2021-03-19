@@ -41,7 +41,7 @@ The next setup is to download [Elasticsearch](https://www.elastic.co/guide/en/el
 ### Configuration
 
 `eg-admin/setupConfig.sh`
-Replace the content with this content
+The content should be like given below
 
 ```bash
 DEBUG=* node ../elastic-graph-config/schemaMaker.js ../elastic-graph-config ../elasticgraph/lib/configLoader
@@ -50,7 +50,7 @@ cp ../elastic-graph-config/frontent/config.json configs/
 ```
 
 `eg-server/package.json`
-Change the start script. Replace with following string.
+The content should be like given below
 
 ```json
 "scripts": {

@@ -1,7 +1,8 @@
-const _ = require('lodash')
-const toml = require('toml')
-const fs = require('fs')
-const backendConfigMaker = require(process.argv[3])
+import _ from 'lodash';
+import toml from 'toml';
+import fs from 'fs';
+const x = process.argv[3];
+import backendConfigMaker from '../elasticgraph/lib/configLoader/index.js';
 
 const folderPath = process.argv[2]
 const getConfig = (configFolderPath) => {

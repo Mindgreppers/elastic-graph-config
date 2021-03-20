@@ -15,7 +15,7 @@ const getConfig = (configFolderPath) => {
   setEntitiesFields(config, configFolderPath + '/web') //like primaryField
   setFrontentConfig(config, configFolderPath + '/schema/frontendConfig.toml')
 
-  fs.writeFile(folderPath + '/frontend/config.json', JSON.stringify(config), (err) => {
+  fs.writeFile(folderPath + '/frontend/config.js', 'export default ' + JSON.stringify(config), (err) => {
     if (err) {
       return console.log(err)
     }
@@ -82,7 +82,7 @@ getConfig(folderPath + '/frontend')
 
 const backendConfig = backendConfigMaker(folderPath + '/backend')
 
-fs.writeFile(folderPath + '/backendConfig.json', JSON.stringify(backendConfig, replacer), (err) => {
+fs.writeFile(folderPath + '/backendConfig.js', 'export default ' + JSON.stringify(backendConfig, replacer), (err) => {
   if (err) {
     console.log(err)
   }

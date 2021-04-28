@@ -1,7 +1,10 @@
-const _ = require('lodash')
+import _ from 'lodash';
+import fs from 'fs';
+let webconfig = fs.readFileSync('./frontend/config.json');
+webconfig = JSON.parse(webconfig);
 
-const webconfig = require('./frontend/config.json')
-let backendConfig = require('./backendConfig.json')
+let backendConfig = fs.readFileSync('./backendConfig.json');
+backendConfig = JSON.parse(backendConfig);
 
 let schema = backendConfig.schema
 
@@ -22,4 +25,4 @@ backendConfig.schema = newConfig
 backendConfig.web = webconfig.web
 backendConfig.frontendConfig = webconfig.frontendConfig
 console.log(JSON.stringify(backendConfig))
-module.exports = backendConfig
+export default backendConfig

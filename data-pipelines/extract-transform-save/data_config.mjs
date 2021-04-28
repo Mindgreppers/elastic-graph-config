@@ -20,6 +20,7 @@ export default {
     workshopDays: ['day1', 'day2', 'day3', 'day4', 'day5'],
     pollTypes: ['quiz', 'morning-quiz', 'test', 'poll'],
     scoredPollTypes: ['quiz', 'morning-quiz', 'test'],
+    
     regex: {
         removeNonAlphabetNumeric: /[^a-zA-Z0-9]/g,
         removeNonAlphabet: /[^a-zA-Z]/g
@@ -27,6 +28,10 @@ export default {
     quizPerformanceColumns: ['Email', 'First Name',	'Last Name', 'Qz1',	'Qz1 %', 'Qz2',	'Qz2 %', 'Qz3', 'Qz3 %', 'Qz4',	'Qz4 %', 'Qz5',	'Qz5 %', 'Qz6',	'Qz6 %', 'Qz7',	'Qz7 %', 'Qz8',	'Qz8 %', 'Qz9',	'Qz9 %', 'Qz10', 'Qz10 %', 'Qz11', 'Qz11 %', 'Qz12', 'Qz12 %', 'Qz13', 'Qz13 %', 'QzM1', 'QzM1 %', 'QzM2', 'QzM2 %', 'QzM3', 'QzM3 %', 'QzM4',	'QzM4 %', 'QzT1P1',	'QzT1P1 %',	'QzT1P2', 'QzT1P2 %', 'QzT1P3',	'QzT1P3 %',	'G.Total',	'% score',	'Quiz Count',	'Test Score',	'% Test Score'],
     transcriptColumns: ['Email','Salutation',	'Name (as registered)',	'Designation',	'Institute Name', 'City', 'Phone', 'Day 1 Att',	'Day 1 Poll', 'Day 2 Att', 'Day 2 Poll', 'Day 3 Att', 'Day 3 Poll',	'Day 4 Att', 'Day 4 Poll', 'Day 5 Att',	'Day 5 Poll', 'Pre-wksp Survey', 'Post wksp survey', 'Post wksp feedback form',	'Assignment 1',	'Assignment 2',	'Assignment 3',	'Assignment 4',	'Rating of FDP : Content', 'Rating of FDP : Process', 'Rating of FDP : Facilitator(s)', 'Rating of organisation of FDP : Communication (before FDP)', 'Rating of organisation of FDP: Communication (after FDP)', '% Connect Time', '% Attended' , 'Polls Participated', 'No. of Submitted Assignments', 'Pre-Survey Submission', 'Post-Survey', 'Self Evaluation', 'Interested attending Next Level',	'Quiz Performance', 'Count of quiz attempts', '% Test Score', 'Recommendation Status', 'programid','FDP ID'],
     parameters: {
+        'numQuizAndMorningQuiz': 17,
+        'numQuestionsInQuizAndMorningQuiz': 95,
+        'numTest': 4,
+        'numQuestionsInTest': 30,
         "pollsHeld": {
             "day1": {
                 "Tot Polls": 17,

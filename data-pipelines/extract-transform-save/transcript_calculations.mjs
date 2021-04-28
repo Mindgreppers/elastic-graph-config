@@ -5,12 +5,11 @@ const debug = new Debug('transcript_calculation');
 const workshopDays = config.workshopDays;
 const POST_WORKSHOP_SURVEY = config.sources.googleForms.postWorkshopSurvey;
 const PRE_WORKSHOP_SURVEY = config.sources.googleForms.preWorkshopSurvey;
-const surveyForms = [PRE_WORKSHOP_SURVEY, POST_WORKSHOP_SURVEY];
 
 export const finalUserWorkshopCalculations = (workshopCode) => {
-    const script = [
+    const script = [//, user._id: sivapriyaravi97gmailcom
         `get workshop ${workshopCode} as workshop.`,
-        `iterate over user-workshops where {workshop._id: ${workshopCode}, user._id: narmadhavmkveceduin} as user-workshop. Get 200 at a time. Flush every 3 cycles. Wait for 500 millis.`, [
+        `iterate over user-workshops where {workshop._id: ${workshopCode}} as user-workshop. Get 200 at a time. Flush every 3 cycles. Wait for 500 millis.`, [
             //'if *user-workshop.connectTime is empty, stop here.',
             //'if *user-workshop.quizPerformance is empty, stop here.',
             calculateQuizzesScorePercentage,
@@ -166,9 +165,11 @@ const calculateTestScoresPercentage = (ctx) => {
         totalScore += get(quizPerformance, ['test', day, 'aggregated', 'totalMarks']) || 0;
     }
     quizPerformance.aggregated.totalTestScore = totalScore;
+    
     //Now calculate quiz score percentages
-    const workshop = ctx.get('workshop')._source;
-    const totalQuestions = workshop.questionCounts.test;
+    
+    //const workshop = ctx.get('workshop')._source;
+    const totalQuestions = config.parameters.numQuestionsInTest; //workshop.questionCounts.test;
     quizPerformance.aggregated.testPercentageScore
         = Math.ceil(100 * totalScore / totalQuestions);
 
@@ -183,23 +184,22 @@ const calculateQuizzesScorePercentage = (ctx) => {
         debug('quiz performance details for user is empty');
         return;
     }
-    let totalScore = 0, numQuizzesAttempted = 0;
+    let totalScore = 0; //, numQuizzesAttempted ;
     for (let pollType of ['quiz', 'morning-quiz']) {
         for (let day of workshopDays) {
             totalScore += get(quizPerformance, [pollType, day, 'aggregated', 'totalMarks']) || 0;
         }
         //Total attempts of quizzes
-        numQuizzesAttempted += get(quizPerformance, [pollType, 'aggregated', 'numPollsAttempted']) || 0;
+        //numQuizzesAttempted += get(quizPerformance, [pollType, 'aggregated', 'numPollsAttempted']) || 0;
     }
-    quizPerformance.aggregated.totalQuizAttempted = numQuizzesAttempted;
+    quizPerformance.aggregated.totalQuizAttempted = config.parameters.numQuizAndMorningQuiz;//numQuizzesAttempted;
     quizPerformance.aggregated.totalQuizScore = totalScore;
     
     //Now calculate quiz score percentages
-    const workshop = ctx.get('workshop')._source;
-    const totalQuestions = workshop.questionCounts['quiz'] + workshop.questionCounts['morning-quiz'];
+    //const workshop = ctx.get('workshop')._source;
+    const totalQuestions = config.parameters.numQuestionsInQuizAndMorningQuiz; //workshop.questionCounts['quiz'] + workshop.questionCounts['morning-quiz'];
     quizPerformance.aggregated.quizzesPercentageScore
         = Math.ceil(100 * totalScore / totalQuestions);
-    
 };
 
 const calculatePollAttemptPercentage = (ctx) => {

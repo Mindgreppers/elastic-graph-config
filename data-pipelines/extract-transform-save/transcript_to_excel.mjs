@@ -111,11 +111,11 @@ const generateRow = (ctx) => {
     //No. of Submitted Assignments
     row.push(numSubmittedAssignments);
     //Pre-Survey Submission
-    row.push(get (userWorkshop, ['surveySumbissions', PRE_WORKSHOP_SURVEY]) || 0);               
+    row.push(get (userWorkshop, ['surveySumbissions', PRE_WORKSHOP_SURVEY]) && 'YES' || 'NO');               
     //Post-Survey	
-    row.push(get (userWorkshop, ['surveySumbissions', POST_WORKSHOP_SURVEY]) || 0);
+    row.push(get (userWorkshop, ['surveySumbissions', POST_WORKSHOP_SURVEY]) && 'YES' || 'NO');
     //Self Evaluation
-    row.push(get(userWorkshop, ['surveySumbissions', POST_WORKSHOP_SURVEY]) || 0);
+    row.push(get(userWorkshop, ['surveySumbissions', POST_WORKSHOP_SURVEY]) && 'YES' || 'NO');
     //Interested attending Next Level
     row.push(get(userWorkshop, ['surveySumbissions','interestedInHigherLevelWorkshop']) || 0);
     //Quiz Performance	
@@ -125,7 +125,7 @@ const generateRow = (ctx) => {
     //% Test Score
     row.push(get(userWorkshop, ['quizPerformance', 'aggregated', 'testPercentageScore']) || 0);
     //Recommendation Status
-    row.push(get(userWorkshop, ['recommendation', 'isRecommended']) || 0);
+    row.push(get(userWorkshop, ['recommendation', 'isRecommended']) && 'Recommended' || 'Not recommended');
     return row;
 
 

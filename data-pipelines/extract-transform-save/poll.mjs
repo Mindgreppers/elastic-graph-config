@@ -17,28 +17,16 @@ export default (workshopCode) => {
 
     return instructions;
 };
-const loadQuizKeys = () => {
-    return [
-        'quiz_keys is {}',
-        'iterate over quiz_keys as quiz_key. Get 1000 at a time.', [
-            (ctx) => {
-                const quizKey = ctx.get('quiz_key');
-                const optionCode = quizKey._source.optionCode;
 
-                quiz_keys[optionCode] = quizKey._source.marks;
-            }
-        ]
-    ]
-}
 //let c = 0, cerr = 0, p = 0, perr = 0;
 const savePollResponses = (workshopCode, day, session) => {
 
     return [
         `get workshop ${workshopCode}`,
 //
-        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 400 at a time. Flush every 2 cycles. Wait for 100 millis`, [
+        `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 200 at a time. Flush every 4 cycles. Wait for 1100 millis`, [
 
-            'get user *rawPoll.uniqueId. Join from read',
+            'get user *rawPoll.uniqueId.',
             //'display *rawPoll',
             'if *user is empty, display found empty user, *rawPoll.uniqueId',
             'if *user is empty, stop here.',
@@ -69,7 +57,11 @@ const savePollResponses = (workshopCode, day, session) => {
             //If the poll was not attempted at all, pollType is not set.
             //Hence don't proceed if pollType is null.
             `if *rawPoll.pollType is empty, stop here.`,
-
+            // (ctx) => {
+            //     if (ctx.get('rawPoll')._source.pollType !== 'quiz') {
+            //         throw new Error('stopHere');
+            //     }
+            // },
             //Search the poll. Create if not existing. For found
             `pollQuery is {
                 day: ${day}, 
@@ -93,15 +85,39 @@ const savePollResponses = (workshopCode, day, session) => {
             saveUserPollData,
 
             //Now update the aggregated user-workshop level data from the performance in this poll.
-            `userWorkshopDataQuery is {
-                user._id: *user._id, 
-                workshop._id: ${workshopCode}
-            }`,
-            'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+            // `userWorkshopDataQuery is {
+            //     user._id: *user._id, 
+            //     workshop._id: ${workshopCode}
+            // }`,
+            // 'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+            getUserWorkshop(),
             updateUserWorkshopLevelInfo
         ]
     ]
 };
+
+const getUserWorkshop = () => {
+    const userWorkshops = {};
+    return async (ctx) => {
+        //const userId = ctx.get('user')._id;
+        //const workshop = ctx.get('workshop');
+        let userWorkshop = userWorkshops[user._id];
+        if (!userWorkshop) {
+            await ctx.es.dsl.execute([
+                `userWorkshopDataQuery is {
+                    user._id: *user._id, 
+                    workshop._id: ${workshopCode}
+                }`,
+                'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+            ], ctx);
+            userWorkshops[user._id] = (userWorkshop = ctx.get('userWorkshopData'));
+            return ctx;
+        } else {
+            return ctx.setImmutable('userWorkshopData', userWorkshop);
+        }
+        
+    }
+}
 
 const setPollTypeInRawPoll = (rawPollSource) => {
     let firstQuestion = rawPollSource['_0']; //First question should have this column name
@@ -221,11 +237,6 @@ const saveQuestionMarksInUserPoll = async (ctx, answer) => {
         });
     }
 }
-
-const aggregateUsersQuizPerformance = async (ctx, workshopCode) => {
-
-
-};
 
 const updateUserWorkshopLevelInfo = (ctx) => {
     

@@ -38,10 +38,10 @@ export const saveWorkshopAttendancesAlongWithNonRegisteredUsers = (workshopCode)
 
 const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCode, day, session) => {
     return [
-        `get workshop ${workshopCode}`,
+        //`get workshop ${workshopCode} as test`,
         `iterate over day_${day}_${session}_attendee_report where {workshopCode: ${workshopCode}} as raw_attendance. Get 1000 at a time. Flush every 5 cycles. Wait for 1000 millis`, [
             'if *raw_attendance.uniqueId is empty, display *raw_attendance.',
-            'if *raw_attendance.uniqueId is empty, stop here.',
+            'if *raw_attendance.uniqueId is empty, stop here.', //continue
             'get user *raw_attendance.uniqueId.',
             
             //Next: If the user was newly created in previous statement, 
@@ -61,7 +61,7 @@ const saveWorkshopDaySessionAttendanceAlongWithNonRegisteredUsers = (workshopCod
             'if *foundNewUser is true, display foundNewUser.',
             'if *foundNewUser is true, index *newUser.',
             //Save total attendance time day and session wise, in user-workshop
-            `search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: ${workshopCode}} as userWorkshopData. Create if not exists.`,
+            `search first user-workshop where {user._id: *raw_attendance.uniqueId, workshop._id: ${workshopCode}} as userWorkshopData. Create if not exists.`,       
             (ctx) => {
                 const userWorkshop = ctx.get('userWorkshopData');
 

@@ -23,11 +23,10 @@ const savePollResponses = (workshopCode, day, session) => {
 
     return [
         `get workshop ${workshopCode}`,
-//
         `iterate over day_${day}_${session}_poll_report where {workshopCode: ${workshopCode}} as rawPoll. Get 200 at a time. Flush every 4 cycles. Wait for 1100 millis`, [
-
+            'if *rawPoll.uniqueId is empty, display found empty rawPoll, *rawPoll',
             'get user *rawPoll.uniqueId.',
-            //'display *rawPoll',
+            'if *user is empty, stop here.',
             'if *user is empty, display found empty user, *rawPoll.uniqueId',
             'if *user is empty, stop here.',
 
@@ -85,25 +84,25 @@ const savePollResponses = (workshopCode, day, session) => {
             saveUserPollData,
 
             //Now update the aggregated user-workshop level data from the performance in this poll.
-            // `userWorkshopDataQuery is {
-            //     user._id: *user._id, 
-            //     workshop._id: ${workshopCode}
-            // }`,
-            // 'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
-            getUserWorkshop(),
+            `userWorkshopDataQuery is {
+                user._id: *user._id, 
+                workshop._id: ${workshopCode}
+            }`,
+            'search first user-workshop where *userWorkshopDataQuery as userWorkshopData. Create if not exists.',
+            //getUserWorkshop(workshopCode),
             updateUserWorkshopLevelInfo
         ]
     ]
 };
 
-const getUserWorkshop = () => {
+const getUserWorkshop = (workshopCode) => {
     const userWorkshops = {};
     return async (ctx) => {
-        //const userId = ctx.get('user')._id;
+        const user = ctx.get('user');
         //const workshop = ctx.get('workshop');
         let userWorkshop = userWorkshops[user._id];
         if (!userWorkshop) {
-            await ctx.es.dsl.execute([
+            ctx = await ctx.es.dsl.execute([
                 `userWorkshopDataQuery is {
                     user._id: *user._id, 
                     workshop._id: ${workshopCode}
@@ -259,7 +258,7 @@ const updateUserWorkshopLevelInfo = (ctx) => {
     const userPoll = ctx.get('user-poll');
     const pollMarks = userPoll._source.totalMarks || 0;
     const pollNumAnswers = userPoll._source.numAnswers || 0;
-
+    
     //update workshop level quiz performance (aggregated across all the quiz, test, morning-quiz)
     incrementAggregateCounters(userWorkshop._source, ['quizPerformance'], pollMarks, pollNumAnswers);
     

@@ -19,12 +19,6 @@ export default async (workshopCode, filePath) => {
     //Write transcript sheet headers
     const transcriptFile = fs.createWriteStream(filePath, { flags: 'a' });
     transcriptFile.write(TRANSCRIPT_COLUMNS + '\n');
-    
-    //Write quiz performance sheet headers
-    // const quizPerformanceFile = fs.createWriteStream('./quiz_performance.csv', { flags: 'a' });
-    // const firstTwoRowsStr = generateQPFirstTwoRows(workshopCode);
-    // transcriptFile.write(firstTwoRowsStr + '\n');
-    // transcriptFile.write(QUIZ_PERFORMANCE_COLUMNS + '\n');
 
     //Now fill the rows
     const script = [

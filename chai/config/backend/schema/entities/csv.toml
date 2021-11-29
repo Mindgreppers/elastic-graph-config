@@ -1,0 +1,88 @@
+[SKT_ID]
+  type = 'String'
+[RULESET_NAME]
+  type = "String"
+[RECONCILIATION_DATE]
+  type = "Date"
+[STATUS]
+  type = "String"
+[COMMENT]
+  type = "String"
+[TAG]
+  type = "String"
+[A.SKT_ID]
+  type = "String"
+[A.SKT_CREATED_AT]
+  type = "Date"
+[A.SKT_CREATED_DATE]
+  type = "Date"
+[A.STT]
+  type = "Number"
+[A.MS_DATE]
+  type = "Date"
+[A.MSTRANSID]
+ type="String"
+ [SKT_ID]
+  type = 'String'
+[A.MS_RECEIPT_ID]
+  type = "String"
+[A.MS_TX_STATUS]
+  type = "Boolean"
+[A.MSTOTAL_AMOUNT]
+ type="Number"
+[A.FILE_ID]
+  type = "String"
+[A.FILENAME]
+  type = "String"
+[A.SKT_UNIQUENESS]
+  type = "Number"
+ [B.SKT_ID]
+  type = 'String'
+[B.SKT_CREATED_AT]
+  type = "Date"
+[B.SKT_CREATED_DATE]
+  type = "Date"
+[B.ID]
+  type = "Number"
+[B.CREATED_AT]
+  type = "Date"
+[B.AMOUNT]
+  type = "Number"
+ [B.ORDER_REF]
+  type = 'String'
+[B.MERCHANT_ORDER_REF]
+  type = "String"
+ [B.CHANNEL_ORDER_REF]
+  type = 'String'
+[B.STATUS_REASON]
+  type = "Boolean"
+  [B.FILE_ID]
+  type = "Number"
+ [B.FILENAME]
+  type = 'String'
+[B.SKT_UNIQUENESS]
+ type="Number"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

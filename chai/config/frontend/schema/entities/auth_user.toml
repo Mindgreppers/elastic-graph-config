@@ -1,0 +1,20 @@
+[email]
+  label = 'Email'
+  dropDown = 'EmailId'
+  
+  
+[password]
+  label = 'Password'
+  
+  
+[username]
+  label = 'UserName'
+[dob]
+  label = 'Date Of Birth'
+  
+  
+[name]
+  autoSuggestion = true
+  label = 'Name'
+
+

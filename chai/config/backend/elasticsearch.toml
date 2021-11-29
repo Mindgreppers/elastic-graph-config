@@ -1,0 +1,5 @@
+maxConnections = 200
+apiVersion = '7.4'
+requestTimeout = 90000
+node = 'http://localhost:9200'
+sniffOnStart = true
